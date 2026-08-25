@@ -272,6 +272,53 @@ html[data-theme="dark"] .theme-icon--moon {
   padding: 24px 0 44px;
 }
 
+.tip-notice {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 13px;
+  color: var(--ink-soft);
+  background: var(--subtle);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gopher);
+  border-radius: 4px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+}
+
+.tip-notice__dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  background: var(--gopher);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(0, 173, 216, 0.16);
+}
+
+.tip-notice strong {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.tip-notice code {
+  padding: 2px 5px;
+  color: var(--gopher-deep);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+
+.tip-notice time {
+  margin-left: auto;
+}
+
+.tip-notice a {
+  color: var(--gopher-deep);
+  font-weight: 600;
+}
+
 .control-bar {
   display: grid;
   grid-template-columns: minmax(220px, 1.4fr) minmax(160px, 0.85fr) minmax(160px, 0.85fr) auto;
@@ -760,6 +807,8 @@ td {
 
 .delta-positive { color: var(--delta-positive); }
 .delta-negative { color: var(--delta-negative); }
+.delta-regression { color: var(--delta-positive); }
+.delta-improvement { color: var(--delta-negative); }
 
 .footer {
   display: grid;
@@ -873,6 +922,16 @@ td {
 
   .dashboard {
     padding-top: 14px;
+  }
+
+  .tip-notice {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .tip-notice time {
+    width: calc(100% - 17px);
+    margin-left: 17px;
   }
 
   .control-bar {

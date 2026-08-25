@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/qmuntal/gosizehistory/internal/archiveinventory"
 	"github.com/qmuntal/gosizehistory/internal/goreleases"
 )
 
@@ -111,6 +112,36 @@ func TestBuildFromHTTPAndWriteFile(t *testing.T) {
 	}
 }
 
+func TestWriteDevelopmentReleaseOmitsArchive(t *testing.T) {
+	commitTime := time.Date(2026, time.August, 25, 7, 7, 23, 0, time.UTC)
+	report := Report{
+		SchemaVersion: SchemaVersion,
+		GeneratedAt:   commitTime,
+		Source:        "https://github.com/golang/go.git@abcdef",
+		Releases: []Release{{
+			Version:     "go1.28-tip",
+			Development: true,
+			Revision:    "abcdef",
+			CommitTime:  &commitTime,
+			Platforms: []Platform{{
+				OS:    "linux",
+				Arch:  "amd64",
+				Tools: []archiveinventory.Tool{},
+			}},
+		}},
+	}
+
+	var buffer bytes.Buffer
+	if err := Write(&buffer, report); err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(buffer.Bytes(), []byte(`"archive"`)) {
+		t.Fatalf("development report contains archive metadata: %s", buffer.String())
+	}
+	if !bytes.Contains(buffer.Bytes(), []byte(`"development": true`)) || !bytes.Contains(buffer.Bytes(), []byte(`"revision": "abcdef"`)) {
+		t.Fatalf("development metadata is missing: %s", buffer.String())
+	}
+}
 func testTarGz(t *testing.T, entries ...any) []byte {
 	t.Helper()
 	var buffer bytes.Buffer

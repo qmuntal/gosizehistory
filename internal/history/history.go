@@ -48,15 +48,19 @@ type Report struct {
 }
 
 type Release struct {
-	Version   string     `json:"version"`
-	Stable    bool       `json:"stable"`
-	Platforms []Platform `json:"platforms"`
+	Version     string     `json:"version"`
+	Stable      bool       `json:"stable"`
+	Development bool       `json:"development,omitempty"`
+	Source      string     `json:"source,omitempty"`
+	Revision    string     `json:"revision,omitempty"`
+	CommitTime  *time.Time `json:"commit_time,omitempty"`
+	Platforms   []Platform `json:"platforms"`
 }
 
 type Platform struct {
 	OS      string                  `json:"os"`
 	Arch    string                  `json:"arch"`
-	Archive Archive                 `json:"archive"`
+	Archive *Archive                `json:"archive,omitempty"`
 	Tools   []archiveinventory.Tool `json:"tools"`
 }
 
@@ -163,7 +167,7 @@ func Build(ctx context.Context, plan Plan, config BuildConfig) (Report, error) {
 					platforms[index] = Platform{
 						OS:   selected.File.OS,
 						Arch: selected.File.Arch,
-						Archive: Archive{
+						Archive: &Archive{
 							Filename: selected.File.Filename,
 							Size:     cachedArchive.Size,
 							SHA256:   cachedArchive.SHA256,

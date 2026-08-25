@@ -56,6 +56,24 @@ go run . -metadata dl.json -dry-run
 
 Use `go run . -h` for all options. Set `-output -` to write JSON to stdout. The `-version`, `-os`, and `-arch` filters are exact matches and may be combined. `-latest-per-minor` may be combined with `-os` and `-arch`, but not with `-version`.
 
+## Go tip
+
+Build and measure the current `golang/go` tip for every standalone toolchain platform, replacing any previous tip entry in the existing report:
+
+```console
+go run . -tip -tip-workers 2 -output go-tool-sizes.json
+```
+
+This mode requires Git, a working bootstrap Go installation, and an existing stable report at the output path. It maintains a dedicated checkout under `.cache/gosizehistory/tip`, force-cleans build products, bootstraps the host toolchain with Go's own make script, and cross-builds every measured binary with `-a -trimpath` and `CGO_ENABLED=0`. The merged report preserves stable releases and contains exactly one tip entry pinned to the Git revision and commit time.
+
+The target matrix comes from `go tool dist list -json`. Android, iOS, JavaScript/Wasm, and WASI/Wasm are excluded because they are execution targets rather than standalone binary toolchain distributions; all other non-broken targets are built. Use `-os` and `-arch` for a focused build, `-tip-ref` to pin another Git ref, or `-bootstrap-goroot` to select the bootstrap toolchain. Use `-tip-base` when the base report differs from the output path.
+
+An interrupted workflow that already produced a standalone tip report can merge it without rebuilding:
+
+```console
+go run . -merge-tip-report go-tip-tool-sizes.json -output go-tool-sizes.json
+```
+
 ## Output
 
 ```json
@@ -101,7 +119,9 @@ Each API archive remains a separate platform record. This matters for historical
 
 ## Dashboard
 
-The static dashboard lives in `docs/` and reads the versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Its comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release, including per-binary additions, removals, and size deltas. The top Platform and Snapshot filters define comparison side A; the comparison panel selects only side B.
+The static dashboard lives in `docs/` and reads the single versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Its comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release, including per-binary additions, removals, and size deltas. The top Platform and Snapshot filters define comparison side A; the comparison panel selects only side B.
+
+Release comparisons report chronological footprint efficiency, independent of which selector contains the newer release: positive means the later release is smaller, while negative means it grew. Platform comparisons remain a direct B-vs-A delta.
 
 The dashboard follows the operating-system light or dark preference on first load and persists changes made with the header theme toggle.
 
@@ -121,7 +141,13 @@ Refresh the published dataset after collecting new releases:
 go run . -latest-per-minor -workers 4 -output docs/data/go-tool-sizes.json
 ```
 
-The archive cache is shared with normal collector runs, so an update downloads only archives that are not already present.
+Refresh the development snapshot independently:
+
+```console
+go run . -tip -tip-workers 2 -output docs/data/go-tool-sizes.json
+```
+
+Regenerating stable releases preserves an existing embedded tip entry. The archive and source-build caches share the `.cache/gosizehistory` root but use separate subdirectories.
 
 ## GitHub Pages
 

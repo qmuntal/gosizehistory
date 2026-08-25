@@ -10,24 +10,33 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 
 	"github.com/qmuntal/gosizehistory/internal/goreleases"
 	"github.com/qmuntal/gosizehistory/internal/history"
+	"github.com/qmuntal/gosizehistory/internal/tipbuild"
 )
 
 type options struct {
-	metadataSource string
-	downloadBase   string
-	output         string
-	cacheDir       string
-	version        string
-	goos           string
-	goarch         string
-	latestPerMinor bool
-	workers        int
-	retries        int
-	dryRun         bool
+	metadataSource  string
+	downloadBase    string
+	output          string
+	cacheDir        string
+	version         string
+	goos            string
+	goarch          string
+	latestPerMinor  bool
+	tip             bool
+	tipRepository   string
+	tipRef          string
+	tipBase         string
+	mergeTipReport  string
+	bootstrapGOROOT string
+	tipWorkers      int
+	workers         int
+	retries         int
+	dryRun          bool
 }
 
 func main() {
@@ -53,6 +62,13 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	flags.StringVar(&opts.goos, "os", "", "exact GOOS to include, such as linux")
 	flags.StringVar(&opts.goarch, "arch", "", "exact release architecture to include, such as amd64")
 	flags.BoolVar(&opts.latestPerMinor, "latest-per-minor", false, "include only the latest stable patch of each Go minor version")
+	flags.BoolVar(&opts.tip, "tip", false, "build a report from golang/go tip instead of release archives")
+	flags.StringVar(&opts.tipRepository, "tip-repository", tipbuild.DefaultRepository, "Git repository used for tip builds")
+	flags.StringVar(&opts.tipRef, "tip-ref", "HEAD", "Git ref fetched for the tip build")
+	flags.StringVar(&opts.tipBase, "tip-base", "", "base report merged with tip (defaults to output path)")
+	flags.StringVar(&opts.mergeTipReport, "merge-tip-report", "", "merge an existing tip-only report without rebuilding")
+	flags.StringVar(&opts.bootstrapGOROOT, "bootstrap-goroot", "", "bootstrap GOROOT for building Go tip (defaults to this binary's GOROOT)")
+	flags.IntVar(&opts.tipWorkers, "tip-workers", 1, "number of target toolchains to build concurrently")
 	flags.IntVar(&opts.workers, "workers", min(runtime.NumCPU(), 4), "number of archives to process concurrently")
 	flags.IntVar(&opts.retries, "retries", 3, "download attempts per archive")
 	flags.BoolVar(&opts.dryRun, "dry-run", false, "show the selected download size without downloading")
@@ -68,11 +84,53 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if opts.retries < 1 {
 		return fmt.Errorf("retries must be at least 1")
 	}
+	if opts.tipWorkers < 1 {
+		return fmt.Errorf("tip-workers must be at least 1")
+	}
 	if opts.output == "" {
 		return fmt.Errorf("output path must not be empty")
 	}
 	if opts.latestPerMinor && opts.version != "" {
 		return fmt.Errorf("latest-per-minor cannot be combined with version")
+	}
+	if (opts.tip || opts.mergeTipReport != "") && (opts.latestPerMinor || opts.version != "") {
+		return fmt.Errorf("tip cannot be combined with latest-per-minor or version")
+	}
+	if (opts.tip || opts.mergeTipReport != "") && opts.dryRun {
+		return fmt.Errorf("dry-run is not supported with tip")
+	}
+	if opts.tip && opts.mergeTipReport != "" {
+		return fmt.Errorf("tip cannot be combined with merge-tip-report")
+	}
+
+	logger := log.New(stderr, "", 0)
+	if opts.mergeTipReport != "" {
+		tipReport, err := history.ReadFile(opts.mergeTipReport)
+		if err != nil {
+			return fmt.Errorf("read tip report: %w", err)
+		}
+		return mergeAndWriteReport(opts.output, opts.tipBase, tipReport, stdout, logger)
+	}
+	if opts.tip {
+		tipReport, err := tipbuild.Build(ctx, tipbuild.Config{
+			WorkDir:         filepath.Join(opts.cacheDir, "tip"),
+			Repository:      opts.tipRepository,
+			Ref:             opts.tipRef,
+			BootstrapGOROOT: opts.bootstrapGOROOT,
+			GOOS:            opts.goos,
+			GOARCH:          opts.goarch,
+			Workers:         opts.tipWorkers,
+			Status: func(message string) {
+				logger.Print(message)
+			},
+			Progress: func(progress tipbuild.Progress) {
+				logger.Printf("[%d/%d] %s/%s (built)", progress.Completed, progress.Total, progress.Target.OS, progress.Target.Arch)
+			},
+		})
+		if err != nil {
+			return err
+		}
+		return mergeAndWriteReport(opts.output, opts.tipBase, tipReport, stdout, logger)
 	}
 
 	client := newHTTPClient(opts.workers)
@@ -86,7 +144,6 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 
-	logger := log.New(stderr, "", 0)
 	knownSize, unknownSizes := plan.KnownDownloadSize()
 	if unknownSizes == 0 {
 		logger.Printf("selected %d archives across %d releases (%s)", len(plan.Archives), plan.ReleaseCount(), formatBytes(knownSize))
@@ -115,13 +172,45 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return err
 	}
 
-	if opts.output == "-" {
-		return history.Write(stdout, report)
+	if opts.output != "-" {
+		if existing, readErr := history.ReadFile(opts.output); readErr == nil {
+			report, err = history.PreserveDevelopment(report, existing)
+			if err != nil {
+				return err
+			}
+		} else if !errors.Is(readErr, os.ErrNotExist) {
+			return fmt.Errorf("read existing output report: %w", readErr)
+		}
 	}
-	if err := history.WriteFile(opts.output, report); err != nil {
+	return writeReport(opts.output, report, stdout, logger)
+}
+
+func mergeAndWriteReport(output, basePath string, tipReport history.Report, stdout io.Writer, logger *log.Logger) error {
+	if basePath == "" {
+		if output == "-" {
+			return fmt.Errorf("tip-base is required when output is stdout")
+		}
+		basePath = output
+	}
+	base, err := history.ReadFile(basePath)
+	if err != nil {
+		return fmt.Errorf("read tip base report %s: %w", basePath, err)
+	}
+	merged, err := history.MergeDevelopment(base, tipReport)
+	if err != nil {
 		return err
 	}
-	logger.Printf("wrote %s", opts.output)
+	return writeReport(output, merged, stdout, logger)
+}
+
+func writeReport(output string, report history.Report, stdout io.Writer, logger *log.Logger) error {
+	if output == "-" {
+		return history.Write(stdout, report)
+	}
+	if err := history.WriteFile(output, report); err != nil {
+		return err
+	}
+	logger.Printf("wrote %s", output)
 	return nil
 }
 

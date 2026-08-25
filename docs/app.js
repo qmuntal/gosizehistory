@@ -70,6 +70,12 @@ const elements = {
   releaseSelect: document.querySelector("#releaseSelect"),
   toolSelect: document.querySelector("#toolSelect"),
   downloadCsv: document.querySelector("#downloadCsv"),
+  tipNotice: document.querySelector("#tipNotice"),
+  tipVersion: document.querySelector("#tipVersion"),
+  tipRevision: document.querySelector("#tipRevision"),
+  tipPlatforms: document.querySelector("#tipPlatforms"),
+  tipCommitTime: document.querySelector("#tipCommitTime"),
+  tipSource: document.querySelector("#tipSource"),
   generatedAt: document.querySelector("#generatedAt"),
   datasetRange: document.querySelector("#datasetRange"),
   trendTarget: document.querySelector("#trendTarget"),
@@ -105,6 +111,9 @@ const elements = {
   compareRightAverage: document.querySelector("#compareRightAverage"),
   compareDelta: document.querySelector("#compareDelta"),
   compareDeltaBytes: document.querySelector("#compareDeltaBytes"),
+  compareDeltaSummary: document.querySelector("#compareDeltaSummary"),
+  compareDeltaLabel: document.querySelector("#compareDeltaLabel"),
+  compareDeltaHeader: document.querySelector("#compareDeltaHeader"),
   compareTableLeft: document.querySelector("#compareTableLeft"),
   compareTableRight: document.querySelector("#compareTableRight"),
   compareTable: document.querySelector("#compareTable"),
@@ -112,6 +121,7 @@ const elements = {
 
 const state = {
   report: null,
+  tipRelease: null,
   releases: [],
   platform: "linux/amd64",
   release: "",
@@ -144,6 +154,7 @@ async function initialize() {
     }
     state.report = await response.json();
     validateReport(state.report);
+    state.tipRelease = state.report.releases.find((release) => release.development) || null;
     state.releases = [...state.report.releases].sort(compareReleases);
 
     configureChartDefaults();
@@ -158,6 +169,7 @@ async function initialize() {
     updatePlatform();
     configureComparison(true);
     updateDatasetMeta();
+    updateTipNotice();
 
     elements.platformSelect.disabled = false;
     elements.releaseSelect.disabled = false;
@@ -445,7 +457,7 @@ function updateSnapshotChart(row) {
       maintainAspectRatio: false,
       scales: {
         x: {
-          ...byteAxisOptions(),
+          ...byteAxisOptions(true),
         },
         y: { grid: { display: false } },
       },
@@ -550,20 +562,54 @@ function renderComparison() {
   }
   const left = summarizePlatform(entries.left.label, entries.left.platform);
   const right = summarizePlatform(entries.right.label, entries.right.platform);
-  const delta = right.total - left.total;
-  const percent = left.total === 0 ? 0 : (delta / left.total) * 100;
+  const change = comparisonChange(left, right);
 
   renderComparisonSide("left", left);
   renderComparisonSide("right", right);
-  elements.compareDelta.textContent = formatPercent(percent);
-  elements.compareDelta.className = percent >= 0 ? "delta-positive" : "delta-negative";
-  elements.compareDeltaBytes.textContent = formatSignedBytes(delta);
+  elements.compareDeltaLabel.textContent = change.label;
+  elements.compareDeltaHeader.textContent = change.columnLabel;
+  elements.compareDeltaSummary.setAttribute("aria-label", change.description);
+  elements.compareDeltaSummary.title = change.description;
+  elements.compareDelta.textContent = formatPercent(change.percent);
+  elements.compareDelta.className = change.regression ? "delta-regression" : "delta-improvement";
+  elements.compareDeltaBytes.textContent = formatSignedBytes(change.bytes);
   elements.compareTableLeft.textContent = left.label;
   elements.compareTableRight.textContent = right.label;
 
   const tools = comparisonTools(left, right);
   updateComparisonChart(left, right, tools.slice(0, 12));
-  updateComparisonTable(tools);
+  updateComparisonTable(tools, change.earlierSide);
+}
+
+function comparisonChange(left, right) {
+  if (state.comparison.mode === "releases") {
+    const leftRelease = releaseByVersion(left.label);
+    const rightRelease = releaseByVersion(right.label);
+    const earlierSide = compareReleases(leftRelease, rightRelease) <= 0 ? "left" : "right";
+    const earlier = earlierSide === "left" ? left : right;
+    const later = earlierSide === "left" ? right : left;
+    const bytes = earlier.total - later.total;
+    return {
+      bytes,
+      percent: earlier.total === 0 ? 0 : (bytes / earlier.total) * 100,
+      regression: bytes < 0,
+      earlierSide,
+      label: "Efficiency",
+      columnLabel: "Efficiency",
+      description: `Footprint efficiency from ${earlier.label} to ${later.label}; negative means the later release is larger`,
+    };
+  }
+
+  const bytes = right.total - left.total;
+  return {
+    bytes,
+    percent: left.total === 0 ? 0 : (bytes / left.total) * 100,
+    regression: bytes > 0,
+    earlierSide: null,
+    label: "B vs A",
+    columnLabel: "Delta",
+    description: "Total footprint difference from platform A to platform B",
+  };
 }
 
 function comparisonEntries() {
@@ -647,7 +693,7 @@ function updateComparisonChart(left, right, tools) {
       interaction: { mode: "index", intersect: false },
       scales: {
         x: {
-          ...byteAxisOptions(),
+          ...byteAxisOptions(true),
         },
         y: { grid: { display: false } },
       },
@@ -660,21 +706,35 @@ function updateComparisonChart(left, right, tools) {
   });
 }
 
-function updateComparisonTable(tools) {
+function updateComparisonTable(tools, earlierSide) {
   elements.compareTable.replaceChildren(...tools.map((tool) => {
     const row = document.createElement("tr");
     let delta = "—";
     let deltaClass = "";
-    if (tool.left === null) {
+    if (earlierSide) {
+      const earlier = earlierSide === "left" ? tool.left : tool.right;
+      const later = earlierSide === "left" ? tool.right : tool.left;
+      if (earlier === null) {
+        delta = "New";
+        deltaClass = "delta-regression";
+      } else if (later === null) {
+        delta = "Removed";
+        deltaClass = "delta-improvement";
+      } else if (earlier > 0) {
+        const percent = ((earlier - later) / earlier) * 100;
+        delta = formatPercent(percent);
+        deltaClass = percent < 0 ? "delta-regression" : "delta-improvement";
+      }
+    } else if (tool.left === null) {
       delta = "New";
-      deltaClass = "delta-positive";
+      deltaClass = "delta-regression";
     } else if (tool.right === null) {
       delta = "Removed";
-      deltaClass = "delta-negative";
+      deltaClass = "delta-improvement";
     } else if (tool.left > 0) {
       const percent = ((tool.right / tool.left) - 1) * 100;
       delta = formatPercent(percent);
-      deltaClass = percent >= 0 ? "delta-positive" : "delta-negative";
+      deltaClass = percent > 0 ? "delta-regression" : "delta-improvement";
     }
     row.append(
       cell(tool.name, "release-cell"),
@@ -776,7 +836,7 @@ function commonChartOptions(tooltipLabel, onClick, stacked = false) {
   };
 }
 
-function byteAxisOptions() {
+function byteAxisOptions(horizontal = false) {
   return {
     beginAtZero: true,
     grid: { color: COLORS.grid },
@@ -791,8 +851,9 @@ function byteAxisOptions() {
     ticks: {
       autoSkip: true,
       autoSkipPadding: 12,
+      align: horizontal ? "inner" : "center",
       maxTicksLimit: 6,
-      callback: (value) => Math.round(value / MEBIBYTE),
+      callback: (value) => horizontal && value === 0 ? "" : Math.round(value / MEBIBYTE),
     },
   };
 }
@@ -809,10 +870,11 @@ function lineDataset(label, data, borderColor, backgroundColor) {
     borderColor,
     backgroundColor,
     borderWidth: 2,
-    pointBackgroundColor: borderColor,
+    pointBackgroundColor: (context) => state.releases[context.dataIndex]?.development ? COLORS.surface : borderColor,
     pointBorderColor: COLORS.surface,
-    pointBorderWidth: 1,
-    pointRadius: 3,
+    pointBorderWidth: (context) => state.releases[context.dataIndex]?.development ? 3 : 1,
+    pointRadius: (context) => state.releases[context.dataIndex]?.development ? 6 : 3,
+    pointStyle: (context) => state.releases[context.dataIndex]?.development ? "rectRot" : "circle",
     pointHoverRadius: 5,
     tension: 0.22,
     spanGaps: false,
@@ -904,10 +966,34 @@ function shortVersion(version) {
 function updateDatasetMeta() {
   const first = state.releases[0].version;
   const latest = state.releases.at(-1).version;
-  elements.datasetRange.textContent = `${first} → ${latest} · ${state.releases.length} releases`;
+  const stableCount = state.releases.filter((release) => !release.development).length;
+  elements.datasetRange.textContent = state.tipRelease
+    ? `${first} → ${latest} · ${stableCount} releases + tip`
+    : `${first} → ${latest} · ${stableCount} releases`;
   const generated = new Date(state.report.generated_at);
   elements.generatedAt.dateTime = state.report.generated_at;
   elements.generatedAt.textContent = `Generated ${new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(generated)} UTC`;
+}
+
+function updateTipNotice() {
+  if (!state.tipRelease) {
+    elements.tipNotice.hidden = true;
+    return;
+  }
+  const release = state.tipRelease;
+  const revision = release.revision || "unknown";
+  elements.tipVersion.textContent = release.version;
+  elements.tipRevision.textContent = revision.slice(0, 12);
+  elements.tipRevision.title = revision;
+  elements.tipPlatforms.textContent = pluralize(release.platforms.length, "platform");
+  if (release.commit_time) {
+    const commitTime = new Date(release.commit_time);
+    elements.tipCommitTime.dateTime = release.commit_time;
+    elements.tipCommitTime.textContent = `${new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(commitTime)} UTC`;
+  }
+  const repository = (release.source || "https://github.com/golang/go.git").replace(/\.git$/, "");
+  elements.tipSource.href = revision !== "unknown" ? `${repository}/commit/${revision}` : repository;
+  elements.tipNotice.hidden = false;
 }
 
 function downloadCsv() {

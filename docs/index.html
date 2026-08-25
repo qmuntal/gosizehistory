@@ -75,6 +75,15 @@
       </div>
     </section>
 
+    <aside id="tipNotice" class="tip-notice" aria-label="Go tip snapshot" hidden>
+      <span class="tip-notice__dot" aria-hidden="true"></span>
+      <strong id="tipVersion">golang/go tip</strong>
+      <code id="tipRevision">—</code>
+      <span id="tipPlatforms">—</span>
+      <time id="tipCommitTime">—</time>
+      <a id="tipSource" href="https://github.com/golang/go">View source</a>
+    </aside>
+
     <div id="status" class="status" role="status">
       <span class="status__spinner" aria-hidden="true"></span>
       Loading 8,000+ binary measurements
@@ -162,8 +171,8 @@
             </dl>
           </section>
 
-          <div class="compare-delta" aria-label="Total footprint difference">
-            <span>B vs A</span>
+          <div id="compareDeltaSummary" class="compare-delta" aria-label="Total footprint difference">
+            <span id="compareDeltaLabel">B vs A</span>
             <strong id="compareDelta">—</strong>
             <small id="compareDeltaBytes">—</small>
           </div>
@@ -191,7 +200,7 @@
                   <th scope="col">Binary</th>
                   <th scope="col" id="compareTableLeft">A</th>
                   <th scope="col" id="compareTableRight">B</th>
-                  <th scope="col">Delta</th>
+                  <th id="compareDeltaHeader" scope="col">Delta</th>
                 </tr>
               </thead>
               <tbody id="compareTable"></tbody>
