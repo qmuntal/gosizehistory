@@ -64,7 +64,7 @@ Build and measure the current `golang/go` tip for every standalone toolchain pla
 go run . -tip -tip-workers 2 -output go-tool-sizes.json
 ```
 
-This mode requires Git, a working bootstrap Go installation, and an existing stable report at the output path. It maintains a dedicated checkout under `.cache/gosizehistory/tip`, force-cleans build products, bootstraps the host toolchain with Go's own make script, and cross-builds every measured binary with `-a -trimpath` and `CGO_ENABLED=0`. The merged report preserves stable releases and contains exactly one tip entry pinned to the Git revision and commit time.
+This mode requires Git, a working bootstrap Go installation, and an existing stable report at the output path. It maintains a dedicated checkout under `.cache/gosizehistory/tip`, force-cleans build products, bootstraps the host toolchain with Go's own make script, and cross-builds every measured binary with `-a`, `CGO_ENABLED=0`, and the exact release flags used by `cmd/dist`: `-trimpath -ldflags=-w -gcflags=cmd/...=-dwarf=false`. The merged report preserves stable releases and contains exactly one tip entry pinned to the Git revision and commit time.
 
 The target matrix comes from `go tool dist list -json`. Android, iOS, JavaScript/Wasm, and WASI/Wasm are excluded because they are execution targets rather than standalone binary toolchain distributions; all other non-broken targets are built. Use `-os` and `-arch` for a focused build, `-tip-ref` to pin another Git ref, or `-bootstrap-goroot` to select the bootstrap toolchain. Use `-tip-base` when the base report differs from the output path.
 

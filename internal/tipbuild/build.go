@@ -20,6 +20,8 @@ import (
 
 const DefaultRepository = "https://github.com/golang/go.git"
 
+const releaseGOFLAGS = "-trimpath -ldflags=-w -gcflags=cmd/...=-dwarf=false"
+
 var developmentVersionPattern = regexp.MustCompile(`\bgo(\d+\.\d+)`)
 
 type Config struct {
@@ -306,7 +308,7 @@ func buildTarget(ctx context.Context, goCommand, sourceDir, outputDir, gocache s
 	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		return history.Platform{}, fmt.Errorf("build tip %s/%s: %w", target.OS, target.Arch, err)
 	}
-	args := []string{"build", "-a", "-trimpath", "-buildvcs=false", "-o", targetDir}
+	args := []string{"build", "-a", "-buildvcs=false", "-o", targetDir}
 	args = append(args, distributionPackages...)
 	if _, err := run(ctx, filepath.Join(sourceDir, "src"), targetEnvironment(sourceDir, gocache, target), goCommand, args...); err != nil {
 		return history.Platform{}, fmt.Errorf("build tip %s/%s: %w", target.OS, target.Arch, err)
@@ -320,10 +322,24 @@ func buildTarget(ctx context.Context, goCommand, sourceDir, outputDir, gocache s
 
 func targetEnvironment(goroot, gocache string, target Target) []string {
 	environment := goEnvironment(goroot, target.OS, target.Arch, gocache)
+	environment = setEnvironment(environment, "GOFLAGS", releaseGOFLAGS)
 	if target.OS == "linux" && target.Arch == "arm" {
-		environment = append(environment, "GOARM=6")
-		sort.Strings(environment)
+		environment = setEnvironment(environment, "GOARM", "6")
 	}
+	return environment
+}
+
+func setEnvironment(environment []string, key, value string) []string {
+	prefix := strings.ToUpper(key) + "="
+	for index, entry := range environment {
+		if strings.HasPrefix(strings.ToUpper(entry), prefix) {
+			environment[index] = key + "=" + value
+			sort.Strings(environment)
+			return environment
+		}
+	}
+	environment = append(environment, key+"="+value)
+	sort.Strings(environment)
 	return environment
 }
 

@@ -73,6 +73,9 @@ func TestTargetEnvironment(t *testing.T) {
 	if values["GOOS"] != "linux" || values["GOARCH"] != "arm" || values["GOARM"] != "6" {
 		t.Fatalf("unexpected target environment: GOOS=%q GOARCH=%q GOARM=%q", values["GOOS"], values["GOARCH"], values["GOARM"])
 	}
+	if values["GOFLAGS"] != releaseGOFLAGS {
+		t.Fatalf("GOFLAGS = %q, want %q", values["GOFLAGS"], releaseGOFLAGS)
+	}
 	if _, ok := values["GOAMD64"]; ok {
 		t.Fatal("host GOAMD64 leaked into target environment")
 	}
