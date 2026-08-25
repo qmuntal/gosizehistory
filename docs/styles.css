@@ -87,19 +87,13 @@ a {
   gap: 18px;
 }
 
-.brand__mark {
-  width: 64px;
-  height: 52px;
-  display: grid;
-  place-items: center;
+.brand__logo {
+  width: 59px;
+  height: 72px;
+  display: block;
   flex: 0 0 auto;
-  color: var(--ink);
-  background: var(--cyan);
-  border: 2px solid #5ad7f1;
-  border-radius: 4px;
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 25px;
-  font-weight: 600;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.22));
 }
 
 .eyebrow {
@@ -678,6 +672,18 @@ td {
   font-weight: 600;
 }
 
+.footer__links {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  text-align: right;
+}
+
+.footer__links span {
+  white-space: nowrap;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -728,10 +734,9 @@ td {
     gap: 15px;
   }
 
-  .brand__mark {
-    width: 54px;
-    height: 46px;
-    font-size: 21px;
+  .brand__logo {
+    width: 47px;
+    height: 58px;
   }
 
   .dataset-meta {
@@ -905,6 +910,18 @@ td {
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .footer__links {
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 5px;
+    text-align: left;
+  }
+
+  .footer__links span {
+    white-space: normal;
   }
 }
 
