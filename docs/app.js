@@ -171,9 +171,7 @@ function bindControls() {
     updatePlatform();
   });
   elements.releaseSelect.addEventListener("change", () => {
-    state.release = elements.releaseSelect.value;
-    updateSnapshot();
-    updateTable();
+    setRelease(elements.releaseSelect.value);
   });
   elements.toolSelect.addEventListener("change", () => {
     state.tool = elements.toolSelect.value;
@@ -193,16 +191,19 @@ function bindControls() {
   elements.compareContextSelect.addEventListener("change", () => {
     state.comparison.context = elements.compareContextSelect.value;
     populateComparisonSides(true);
+    synchronizeTopFromComparison();
   });
   elements.compareLeftSelect.addEventListener("change", () => {
     state.comparison.left = elements.compareLeftSelect.value;
     keepComparisonDistinct("left");
     renderComparison();
+    synchronizeTopFromComparison();
   });
   elements.compareRightSelect.addEventListener("change", () => {
     state.comparison.right = elements.compareRightSelect.value;
     keepComparisonDistinct("right");
     renderComparison();
+    synchronizeTopFromComparison();
   });
 }
 
@@ -236,10 +237,13 @@ function populatePlatformSelect() {
   elements.platformSelect.value = state.platform;
 }
 
-function updatePlatform() {
+function updatePlatform(synchronize = true) {
+  const selectedRelease = state.release;
   state.rows = state.releases.map((release) => makeRow(release, preferredPlatform(release, state.platform)));
   const availableRows = state.rows.filter((row) => row.platform);
-  state.release = availableRows.at(-1)?.version || "";
+  state.release = availableRows.some((row) => row.version === selectedRelease)
+    ? selectedRelease
+    : availableRows.at(-1)?.version || "";
 
   populateReleaseSelect(availableRows);
   populateToolSelect(availableRows);
@@ -250,6 +254,9 @@ function updatePlatform() {
   updateSnapshot();
   updateTable();
   elements.trendTarget.textContent = platformLabel(state.platform);
+  if (synchronize) {
+    synchronizeComparisonFromTop();
+  }
 }
 
 function populateReleaseSelect(rows) {
@@ -527,6 +534,65 @@ function setSelectOptions(select, options, selected) {
   select.value = selected;
 }
 
+function synchronizeComparisonFromTop() {
+  if (elements.compareContextSelect.disabled || elements.compareContextSelect.options.length === 0) {
+    return;
+  }
+
+  if (state.comparison.mode === "releases") {
+    if (selectHasValue(elements.compareContextSelect, state.platform) && state.comparison.context !== state.platform) {
+      state.comparison.context = state.platform;
+      elements.compareContextSelect.value = state.platform;
+      populateComparisonSides(false);
+    }
+    if (selectHasValue(elements.compareRightSelect, state.release)) {
+      state.comparison.right = state.release;
+      elements.compareRightSelect.value = state.release;
+      keepComparisonDistinct("right");
+      synchronizeComparisonSelectValues();
+      renderComparison();
+    }
+    return;
+  }
+
+  if (selectHasValue(elements.compareContextSelect, state.release) && state.comparison.context !== state.release) {
+    state.comparison.context = state.release;
+    elements.compareContextSelect.value = state.release;
+    populateComparisonSides(false);
+  }
+  if (selectHasValue(elements.compareLeftSelect, state.platform)) {
+    state.comparison.left = state.platform;
+    elements.compareLeftSelect.value = state.platform;
+    keepComparisonDistinct("left");
+    synchronizeComparisonSelectValues();
+    renderComparison();
+  }
+}
+
+function synchronizeTopFromComparison() {
+  const comparingReleases = state.comparison.mode === "releases";
+  const platform = comparingReleases ? state.comparison.context : state.comparison.left;
+  const release = comparingReleases ? state.comparison.right : state.comparison.context;
+
+  if (platform && state.platform !== platform && selectHasValue(elements.platformSelect, platform)) {
+    state.platform = platform;
+    elements.platformSelect.value = platform;
+    updatePlatform(false);
+  }
+  if (release && selectHasValue(elements.releaseSelect, release)) {
+    setRelease(release, false);
+  }
+}
+
+function synchronizeComparisonSelectValues() {
+  elements.compareLeftSelect.value = state.comparison.left;
+  elements.compareRightSelect.value = state.comparison.right;
+}
+
+function selectHasValue(select, value) {
+  return [...select.options].some((option) => option.value === value);
+}
+
 function renderComparison() {
   const entries = comparisonEntries();
   if (!entries) {
@@ -718,11 +784,14 @@ function selectReleaseFromChart(_event, activeElements) {
   }
 }
 
-function setRelease(version) {
+function setRelease(version, synchronize = true) {
   state.release = version;
   elements.releaseSelect.value = version;
   updateSnapshot();
   updateTable();
+  if (synchronize) {
+    synchronizeComparisonFromTop();
+  }
 }
 
 function commonChartOptions(tooltipLabel, onClick, stacked = false) {
