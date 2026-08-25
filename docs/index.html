@@ -95,6 +95,7 @@
           <div>
             <p class="eyebrow">Compare</p>
             <h2>Toolchains side by side</h2>
+            <p id="compareScope" class="compare-scope">—</p>
           </div>
           <div class="segmented" role="group" aria-label="Comparison mode">
             <button class="segmented__button" type="button" data-compare-mode="releases" aria-pressed="true">Releases</button>
@@ -103,10 +104,6 @@
         </header>
 
         <div class="compare-controls">
-          <div class="field compare-context">
-            <label id="compareContextLabel" for="compareContextSelect">Platform</label>
-            <select id="compareContextSelect" disabled></select>
-          </div>
           <div class="field">
             <label id="compareLeftLabel" for="compareLeftSelect">Release A</label>
             <select id="compareLeftSelect" disabled></select>

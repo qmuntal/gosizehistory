@@ -387,6 +387,13 @@ h2 {
   padding: 20px 20px 0;
 }
 
+.compare-scope {
+  margin: 5px 0 0;
+  color: var(--ink-soft);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+}
+
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -418,7 +425,7 @@ h2 {
 
 .compare-controls {
   display: grid;
-  grid-template-columns: minmax(220px, 1.3fr) minmax(180px, 1fr) 34px minmax(180px, 1fr);
+  grid-template-columns: minmax(180px, 1fr) 34px minmax(180px, 1fr);
   align-items: end;
   gap: 14px;
   padding: 16px 20px;
@@ -848,10 +855,6 @@ td {
     padding: 14px 12px;
   }
 
-  .compare-context {
-    grid-column: 1 / -1;
-  }
-
   .compare-summary {
     grid-template-areas:
       "left right"
@@ -963,7 +966,6 @@ td {
     grid-template-columns: 1fr;
   }
 
-  .compare-context,
   .compare-controls .field {
     grid-column: 1;
   }

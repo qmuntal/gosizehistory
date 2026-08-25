@@ -71,8 +71,7 @@ const elements = {
   releaseTable: document.querySelector("#releaseTable"),
   tableCount: document.querySelector("#tableCount"),
   compareModeButtons: [...document.querySelectorAll("[data-compare-mode]")],
-  compareContextLabel: document.querySelector("#compareContextLabel"),
-  compareContextSelect: document.querySelector("#compareContextSelect"),
+  compareScope: document.querySelector("#compareScope"),
   compareLeftLabel: document.querySelector("#compareLeftLabel"),
   compareLeftSelect: document.querySelector("#compareLeftSelect"),
   compareRightLabel: document.querySelector("#compareRightLabel"),
@@ -132,13 +131,16 @@ async function initialize() {
     configureChartDefaults();
     populatePlatformSelect();
     bindControls();
-    updatePlatform();
-    configureComparison(true);
-    updateDatasetMeta();
 
     elements.status.hidden = true;
     elements.metricGrid.hidden = false;
     elements.visuals.hidden = false;
+    elements.visuals.getBoundingClientRect();
+
+    updatePlatform();
+    configureComparison(true);
+    updateDatasetMeta();
+
     elements.platformSelect.disabled = false;
     elements.releaseSelect.disabled = false;
     elements.toolSelect.disabled = false;
@@ -188,22 +190,17 @@ function bindControls() {
       configureComparison(true);
     });
   }
-  elements.compareContextSelect.addEventListener("change", () => {
-    state.comparison.context = elements.compareContextSelect.value;
-    populateComparisonSides(true);
-    synchronizeTopFromComparison();
-  });
   elements.compareLeftSelect.addEventListener("change", () => {
     state.comparison.left = elements.compareLeftSelect.value;
     keepComparisonDistinct("left");
     renderComparison();
-    synchronizeTopFromComparison();
+    synchronizeTopFromComparison("left");
   });
   elements.compareRightSelect.addEventListener("change", () => {
     state.comparison.right = elements.compareRightSelect.value;
     keepComparisonDistinct("right");
     renderComparison();
-    synchronizeTopFromComparison();
+    synchronizeTopFromComparison("right");
   });
 }
 
@@ -220,10 +217,7 @@ function populatePlatformSelect() {
     }
   }
 
-  const keys = [...coverage.keys()].sort((left, right) => {
-    const coverageDifference = coverage.get(right) - coverage.get(left);
-    return coverageDifference || platformLabel(left).localeCompare(platformLabel(right));
-  });
+  const keys = [...coverage.keys()].sort(comparePlatformKeys);
   elements.platformSelect.replaceChildren(...keys.map((key) => {
     const option = document.createElement("option");
     option.value = key;
@@ -428,42 +422,15 @@ function configureComparison(reset) {
     button.setAttribute("aria-pressed", String(button.dataset.compareMode === state.comparison.mode));
   }
 
-  elements.compareContextLabel.textContent = comparingReleases ? "Platform" : "Release";
   elements.compareLeftLabel.textContent = comparingReleases ? "Release A" : "Platform A";
   elements.compareRightLabel.textContent = comparingReleases ? "Release B" : "Platform B";
-
-  const contextOptions = comparingReleases ? comparisonPlatformOptions() : comparisonReleaseOptions();
-  const preferredContext = comparingReleases ? state.platform : state.release;
-  if (reset || !contextOptions.some((option) => option.value === state.comparison.context)) {
-    state.comparison.context = contextOptions.some((option) => option.value === preferredContext)
-      ? preferredContext
-      : contextOptions[0]?.value || "";
-  }
-  setSelectOptions(elements.compareContextSelect, contextOptions, state.comparison.context);
-  elements.compareContextSelect.disabled = false;
+  state.comparison.context = comparingReleases ? state.platform : state.release;
+  elements.compareScope.textContent = comparingReleases
+    ? platformLabel(state.comparison.context)
+    : state.comparison.context;
   elements.compareLeftSelect.disabled = false;
   elements.compareRightSelect.disabled = false;
   populateComparisonSides(true);
-}
-
-function comparisonPlatformOptions() {
-  const coverage = new Map();
-  for (const release of state.releases) {
-    for (const key of uniquePlatformKeys(release)) {
-      coverage.set(key, (coverage.get(key) || 0) + 1);
-    }
-  }
-  return [...coverage.entries()]
-    .filter(([, count]) => count >= 2)
-    .sort((left, right) => right[1] - left[1] || platformLabel(left[0]).localeCompare(platformLabel(right[0])))
-    .map(([key, count]) => ({ value: key, label: `${platformLabel(key)} · ${count}/${state.releases.length}` }));
-}
-
-function comparisonReleaseOptions() {
-  return [...state.releases]
-    .reverse()
-    .filter((release) => uniquePlatformKeys(release).length >= 2)
-    .map((release) => ({ value: release.version, label: release.version }));
 }
 
 function populateComparisonSides(reset) {
@@ -477,7 +444,7 @@ function populateComparisonSides(reset) {
   } else {
     const release = releaseByVersion(state.comparison.context);
     options = uniquePlatformKeys(release)
-      .sort((left, right) => platformLabel(left).localeCompare(platformLabel(right)))
+      .sort(comparePlatformKeys)
       .map((key) => ({ value: key, label: platformLabel(key) }));
   }
 
@@ -535,14 +502,14 @@ function setSelectOptions(select, options, selected) {
 }
 
 function synchronizeComparisonFromTop() {
-  if (elements.compareContextSelect.disabled || elements.compareContextSelect.options.length === 0) {
+  if (elements.compareLeftSelect.disabled || elements.compareLeftSelect.options.length === 0) {
     return;
   }
 
   if (state.comparison.mode === "releases") {
-    if (selectHasValue(elements.compareContextSelect, state.platform) && state.comparison.context !== state.platform) {
+    if (state.comparison.context !== state.platform) {
       state.comparison.context = state.platform;
-      elements.compareContextSelect.value = state.platform;
+      elements.compareScope.textContent = platformLabel(state.comparison.context);
       populateComparisonSides(false);
     }
     if (selectHasValue(elements.compareRightSelect, state.release)) {
@@ -555,9 +522,9 @@ function synchronizeComparisonFromTop() {
     return;
   }
 
-  if (selectHasValue(elements.compareContextSelect, state.release) && state.comparison.context !== state.release) {
+  if (state.comparison.context !== state.release) {
     state.comparison.context = state.release;
-    elements.compareContextSelect.value = state.release;
+    elements.compareScope.textContent = state.comparison.context;
     populateComparisonSides(false);
   }
   if (selectHasValue(elements.compareLeftSelect, state.platform)) {
@@ -569,18 +536,19 @@ function synchronizeComparisonFromTop() {
   }
 }
 
-function synchronizeTopFromComparison() {
-  const comparingReleases = state.comparison.mode === "releases";
-  const platform = comparingReleases ? state.comparison.context : state.comparison.left;
-  const release = comparingReleases ? state.comparison.right : state.comparison.context;
-
-  if (platform && state.platform !== platform && selectHasValue(elements.platformSelect, platform)) {
-    state.platform = platform;
-    elements.platformSelect.value = platform;
-    updatePlatform(false);
+function synchronizeTopFromComparison(changedSide) {
+  if (state.comparison.mode === "releases" && changedSide === "right") {
+    if (selectHasValue(elements.releaseSelect, state.comparison.right)) {
+      setRelease(state.comparison.right, false);
+    }
+    return;
   }
-  if (release && selectHasValue(elements.releaseSelect, release)) {
-    setRelease(release, false);
+  if (state.comparison.mode === "platforms" && changedSide === "left") {
+    if (state.platform !== state.comparison.left && selectHasValue(elements.platformSelect, state.comparison.left)) {
+      state.platform = state.comparison.left;
+      elements.platformSelect.value = state.platform;
+      updatePlatform(false);
+    }
   }
 }
 
@@ -997,6 +965,14 @@ function sum(values) {
 
 function showError(error) {
   console.error(error);
+  elements.status.hidden = false;
   elements.status.className = "status status--error";
   elements.status.textContent = `Unable to load dashboard: ${error.message}`;
+}
+
+function comparePlatformKeys(left, right) {
+  return platformLabel(left).localeCompare(platformLabel(right), "en", {
+    numeric: true,
+    sensitivity: "base",
+  });
 }
