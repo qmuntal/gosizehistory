@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive history of Go distribution and toolchain binary sizes across releases and platforms.">
+  <title>Go Size History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#dashboard">Skip to dashboard</a>
+
+  <header class="masthead">
+    <div class="masthead__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">Go</span>
+        <div>
+          <p class="eyebrow">Binary archaeology</p>
+          <h1>Go Size History</h1>
+        </div>
+      </div>
+      <div class="dataset-meta">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="datasetRange">Loading releases</span>
+        <span class="meta-divider" aria-hidden="true"></span>
+        <time id="generatedAt">Reading dataset</time>
+      </div>
+    </div>
+  </header>
+
+  <main id="dashboard" class="dashboard">
+    <section class="control-bar" aria-label="Dashboard filters">
+      <div class="field field--platform">
+        <label for="platformSelect">Platform</label>
+        <select id="platformSelect" disabled></select>
+      </div>
+      <div class="field">
+        <label for="releaseSelect">Snapshot</label>
+        <select id="releaseSelect" disabled></select>
+      </div>
+      <div class="field">
+        <label for="toolSelect">Tool</label>
+        <select id="toolSelect" disabled></select>
+      </div>
+      <div class="actions" aria-label="Data exports">
+        <button id="downloadCsv" class="button" type="button" disabled>
+          <i data-lucide="download" aria-hidden="true"></i>
+          CSV
+        </button>
+        <a class="button button--secondary" href="./data/go-tool-sizes.json" download>
+          <i data-lucide="file-json-2" aria-hidden="true"></i>
+          JSON
+        </a>
+      </div>
+    </section>
+
+    <div id="status" class="status" role="status">
+      <span class="status__spinner" aria-hidden="true"></span>
+      Loading 8,000+ binary measurements
+    </div>
+
+    <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
+      <article class="metric metric--cyan">
+        <p>Latest archive</p>
+        <strong id="latestArchive">—</strong>
+        <span id="latestRelease">—</span>
+      </article>
+      <article class="metric metric--coral">
+        <p>Change since first</p>
+        <strong id="archiveChange">—</strong>
+        <span id="firstRelease">—</span>
+      </article>
+      <article class="metric metric--yellow">
+        <p>Peak archive</p>
+        <strong id="peakArchive">—</strong>
+        <span id="peakRelease">—</span>
+      </article>
+      <article class="metric metric--green">
+        <p>Release coverage</p>
+        <strong id="releaseCoverage">—</strong>
+        <span id="archiveCount">—</span>
+      </article>
+    </section>
+
+    <section id="visuals" class="visuals" hidden>
+      <article class="panel panel--trend">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Distribution</p>
+            <h2>Archive vs executable payload</h2>
+          </div>
+          <span id="trendTarget" class="panel__context">—</span>
+        </header>
+        <div class="chart-frame chart-frame--large">
+          <canvas id="archiveChart" role="img" aria-label="Distribution archive and executable payload size by Go release"></canvas>
+        </div>
+      </article>
+
+      <article class="panel panel--snapshot">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Selected release</p>
+            <h2 id="snapshotTitle">Release snapshot</h2>
+          </div>
+          <span id="snapshotTotal" class="panel__context">—</span>
+        </header>
+        <div class="snapshot-layout">
+          <div class="chart-frame chart-frame--donut">
+            <canvas id="snapshotChart" role="img" aria-label="Command and internal tool share for the selected release"></canvas>
+          </div>
+          <ol id="topTools" class="top-tools" aria-label="Largest executable tools"></ol>
+        </div>
+      </article>
+
+      <article class="panel panel--composition">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Composition</p>
+            <h2>Shipped executable footprint</h2>
+          </div>
+          <span class="panel__context">Commands + internal tools</span>
+        </header>
+        <div class="chart-frame">
+          <canvas id="compositionChart" role="img" aria-label="Stacked command and internal tool sizes by Go release"></canvas>
+        </div>
+      </article>
+
+      <article class="panel panel--tool">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Single binary</p>
+            <h2 id="toolChartTitle">Tool evolution</h2>
+          </div>
+          <span id="toolCoverage" class="panel__context">—</span>
+        </header>
+        <div class="chart-frame">
+          <canvas id="toolChart" role="img" aria-label="Selected tool size by Go release"></canvas>
+        </div>
+      </article>
+
+      <article class="panel panel--table">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Release ledger</p>
+            <h2>Measured artifacts</h2>
+          </div>
+          <span id="tableCount" class="panel__context">—</span>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Release</th>
+                <th scope="col">Archive</th>
+                <th scope="col">Change</th>
+                <th scope="col">Executables</th>
+                <th scope="col" id="toolColumnHeader">Selected tool</th>
+                <th scope="col">Count</th>
+                <th scope="col">Artifact</th>
+              </tr>
+            </thead>
+            <tbody id="releaseTable"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Latest stable patch per Go minor line. Sizes are binary bytes from official release archives.</p>
+    <a href="https://go.dev/dl/">go.dev/dl</a>
+  </footer>
+</body>
+</html>

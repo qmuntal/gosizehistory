@@ -1,0 +1,4 @@
+/.cache/
+/gosizehistory
+/gosizehistory.exe
+/go-tool-sizes.json
