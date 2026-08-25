@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Interactive history of Go toolchain executable sizes across releases and platforms.">
   <title>Go Size History</title>
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("gosizehistory-theme");
+        document.documentElement.dataset.theme = saved || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      } catch {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
@@ -31,6 +41,10 @@
         <span id="datasetRange">Loading releases</span>
         <span class="meta-divider" aria-hidden="true"></span>
         <time id="generatedAt">Reading dataset</time>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Use dark theme" aria-pressed="false" title="Use dark theme">
+          <i class="theme-icon theme-icon--moon" data-lucide="moon" aria-hidden="true"></i>
+          <i class="theme-icon theme-icon--sun" data-lucide="sun" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </header>
@@ -67,22 +81,22 @@
     </div>
 
     <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
-      <article class="metric metric--cyan">
+      <article class="metric metric--gopher">
         <p>Latest footprint</p>
         <strong id="latestFootprint">—</strong>
         <span id="latestRelease">—</span>
       </article>
-      <article class="metric metric--coral">
+      <article class="metric metric--amber">
         <p>Change since first</p>
         <strong id="footprintChange">—</strong>
         <span id="firstRelease">—</span>
       </article>
-      <article class="metric metric--yellow">
+      <article class="metric metric--graphite">
         <p>Peak footprint</p>
         <strong id="peakFootprint">—</strong>
         <span id="peakRelease">—</span>
       </article>
-      <article class="metric metric--green">
+      <article class="metric metric--teal">
         <p>Release coverage</p>
         <strong id="releaseCoverage">—</strong>
         <span id="releaseCount">—</span>

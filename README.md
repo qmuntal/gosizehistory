@@ -103,6 +103,8 @@ Each API archive remains a separate platform record. This matters for historical
 
 The static dashboard lives in `docs/` and reads the versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Its comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release, including per-binary additions, removals, and size deltas. The top Platform and Snapshot filters define comparison side A; the comparison panel selects only side B.
 
+The dashboard follows the operating-system light or dark preference on first load and persists changes made with the header theme toggle.
+
 The header uses the unmodified Go gopher by Renée French, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 Preview it locally from the repository root:

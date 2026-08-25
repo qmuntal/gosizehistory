@@ -1,17 +1,35 @@
 const DATA_URL = "./data/go-tool-sizes.json";
 const MEBIBYTE = 1024 * 1024;
 
-const COLORS = {
-  ink: "#172126",
-  inkSoft: "#526168",
-  line: "#d8e1e4",
-  cyan: "#00add8",
-  cyanFill: "rgba(0, 173, 216, 0.12)",
-  coral: "#ef6f61",
-  coralFill: "rgba(239, 111, 97, 0.12)",
-  yellow: "#e3b341",
-  green: "#319b78",
+const COLOR_SCHEMES = {
+  light: {
+    ink: "#20343a",
+    inkSoft: "#5b6b6f",
+    line: "#d0ddda",
+    gopher: "#00add8",
+    gopherFill: "rgba(0, 173, 216, 0.14)",
+    amber: "#d48218",
+    amberFill: "rgba(212, 130, 24, 0.13)",
+    graphite: "#40575e",
+    teal: "#2b7f74",
+    grid: "rgba(32, 52, 58, 0.11)",
+    surface: "#fcfdfd",
+  },
+  dark: {
+    ink: "#e4eeee",
+    inkSoft: "#a8b8b6",
+    line: "#2c4145",
+    gopher: "#00add8",
+    gopherFill: "rgba(0, 173, 216, 0.18)",
+    amber: "#e3a044",
+    amberFill: "rgba(227, 160, 68, 0.16)",
+    graphite: "#789197",
+    teal: "#52a596",
+    grid: "rgba(168, 184, 182, 0.16)",
+    surface: "#172429",
+  },
 };
+const COLORS = {};
 
 const OS_NAMES = {
   aix: "AIX",
@@ -71,6 +89,7 @@ const elements = {
   releaseTable: document.querySelector("#releaseTable"),
   tableCount: document.querySelector("#tableCount"),
   compareModeButtons: [...document.querySelectorAll("[data-compare-mode]")],
+  themeToggle: document.querySelector("#themeToggle"),
   compareScope: document.querySelector("#compareScope"),
   compareRightLabel: document.querySelector("#compareRightLabel"),
   compareRightSelect: document.querySelector("#compareRightSelect"),
@@ -113,6 +132,7 @@ async function initialize() {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+  syncThemeToggle();
 
   try {
     if (!window.Chart) {
@@ -155,7 +175,9 @@ function validateReport(report) {
 }
 
 function configureChartDefaults() {
+  applyChartTheme();
   Chart.defaults.color = COLORS.inkSoft;
+  Chart.defaults.borderColor = COLORS.line;
   Chart.defaults.font.family = "IBM Plex Sans, sans-serif";
   Chart.defaults.font.size = 11;
   Chart.defaults.animation.duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 450;
@@ -166,6 +188,7 @@ function configureChartDefaults() {
 }
 
 function bindControls() {
+  elements.themeToggle.addEventListener("click", toggleTheme);
   elements.platformSelect.addEventListener("change", () => {
     state.platform = elements.platformSelect.value;
     updatePlatform();
@@ -192,6 +215,39 @@ function bindControls() {
     state.comparison.right = elements.compareRightSelect.value;
     renderComparison();
   });
+}
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+}
+
+function toggleTheme() {
+  const theme = currentTheme() === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = theme;
+  try {
+    localStorage.setItem("gosizehistory-theme", theme);
+  } catch {
+    // The selected theme still applies for this page when storage is unavailable.
+  }
+  syncThemeToggle();
+  applyChartTheme();
+  updatePlatform();
+}
+
+function syncThemeToggle() {
+  const dark = currentTheme() === "dark";
+  const label = dark ? "Use light theme" : "Use dark theme";
+  elements.themeToggle.setAttribute("aria-pressed", String(dark));
+  elements.themeToggle.setAttribute("aria-label", label);
+  elements.themeToggle.title = label;
+}
+
+function applyChartTheme() {
+  Object.assign(COLORS, COLOR_SCHEMES[currentTheme()]);
+  if (window.Chart) {
+    Chart.defaults.color = COLORS.inkSoft;
+    Chart.defaults.borderColor = COLORS.line;
+  }
 }
 
 function populatePlatformSelect() {
@@ -313,7 +369,7 @@ function updateFootprintChart() {
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
       datasets: [
-        lineDataset("Total executables", state.rows.map((row) => row.platform ? row.executablePayload : null), COLORS.cyan, COLORS.cyanFill),
+        lineDataset("Total executables", state.rows.map((row) => row.platform ? row.executablePayload : null), COLORS.gopher, COLORS.gopherFill),
       ],
     },
     options: commonChartOptions((context) => formatTooltip(context.dataset.label, context.parsed.y), selectReleaseFromChart),
@@ -332,7 +388,7 @@ function updateCountChart() {
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
       datasets: [
-        barDataset("Binaries", state.rows.map((row) => row.platform ? row.toolCount : null), COLORS.green),
+        barDataset("Binaries", state.rows.map((row) => row.platform ? row.toolCount : null), COLORS.teal),
       ],
     },
     options,
@@ -351,7 +407,7 @@ function updateToolChart() {
     type: "line",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
-      datasets: [lineDataset(state.tool, data, COLORS.coral, COLORS.coralFill)],
+      datasets: [lineDataset(state.tool, data, COLORS.amber, COLORS.amberFill)],
     },
     options: commonChartOptions((context) => formatTooltip(state.tool, context.parsed.y), selectReleaseFromChart),
   });
@@ -378,7 +434,7 @@ function updateSnapshotChart(row) {
       datasets: [{
         label: "Binary size",
         data: tools.map((tool) => tool.size),
-        backgroundColor: COLORS.coral,
+        backgroundColor: COLORS.amber,
         borderRadius: 2,
         maxBarThickness: 22,
       }],
@@ -580,8 +636,8 @@ function updateComparisonChart(left, right, tools) {
     data: {
       labels: tools.map((tool) => tool.name),
       datasets: [
-        barDataset(left.label, tools.map((tool) => tool.left || 0), COLORS.cyan),
-        barDataset(right.label, tools.map((tool) => tool.right || 0), COLORS.coral),
+        barDataset(left.label, tools.map((tool) => tool.left || 0), COLORS.gopher),
+        barDataset(right.label, tools.map((tool) => tool.right || 0), COLORS.amber),
       ],
     },
     options: {
@@ -723,7 +779,7 @@ function commonChartOptions(tooltipLabel, onClick, stacked = false) {
 function byteAxisOptions() {
   return {
     beginAtZero: true,
-    grid: { color: "rgba(82, 97, 104, 0.12)" },
+    grid: { color: COLORS.grid },
     border: { display: false },
     title: {
       display: true,
@@ -754,7 +810,7 @@ function lineDataset(label, data, borderColor, backgroundColor) {
     backgroundColor,
     borderWidth: 2,
     pointBackgroundColor: borderColor,
-    pointBorderColor: "#ffffff",
+    pointBorderColor: COLORS.surface,
     pointBorderWidth: 1,
     pointRadius: 3,
     pointHoverRadius: 5,
