@@ -72,8 +72,6 @@ const elements = {
   tableCount: document.querySelector("#tableCount"),
   compareModeButtons: [...document.querySelectorAll("[data-compare-mode]")],
   compareScope: document.querySelector("#compareScope"),
-  compareLeftLabel: document.querySelector("#compareLeftLabel"),
-  compareLeftSelect: document.querySelector("#compareLeftSelect"),
   compareRightLabel: document.querySelector("#compareRightLabel"),
   compareRightSelect: document.querySelector("#compareRightSelect"),
   compareLeftName: document.querySelector("#compareLeftName"),
@@ -190,17 +188,9 @@ function bindControls() {
       configureComparison(true);
     });
   }
-  elements.compareLeftSelect.addEventListener("change", () => {
-    state.comparison.left = elements.compareLeftSelect.value;
-    keepComparisonDistinct("left");
-    renderComparison();
-    synchronizeTopFromComparison("left");
-  });
   elements.compareRightSelect.addEventListener("change", () => {
     state.comparison.right = elements.compareRightSelect.value;
-    keepComparisonDistinct("right");
     renderComparison();
-    synchronizeTopFromComparison("right");
   });
 }
 
@@ -422,13 +412,11 @@ function configureComparison(reset) {
     button.setAttribute("aria-pressed", String(button.dataset.compareMode === state.comparison.mode));
   }
 
-  elements.compareLeftLabel.textContent = comparingReleases ? "Release A" : "Platform A";
-  elements.compareRightLabel.textContent = comparingReleases ? "Release B" : "Platform B";
+  elements.compareRightLabel.textContent = comparingReleases ? "Compare with release" : "Compare with platform";
   state.comparison.context = comparingReleases ? state.platform : state.release;
   elements.compareScope.textContent = comparingReleases
     ? platformLabel(state.comparison.context)
     : state.comparison.context;
-  elements.compareLeftSelect.disabled = false;
   elements.compareRightSelect.disabled = false;
   populateComparisonSides(true);
 }
@@ -448,20 +436,25 @@ function populateComparisonSides(reset) {
       .map((key) => ({ value: key, label: platformLabel(key) }));
   }
 
-  if (reset || !options.some((option) => option.value === state.comparison.left)) {
-    state.comparison.left = comparingReleases
-      ? options[1]?.value || options[0]?.value || ""
-      : preferredOption(options, state.platform, "linux/amd64");
+  const baseline = comparingReleases ? state.release : state.platform;
+  state.comparison.left = options.some((option) => option.value === baseline)
+    ? baseline
+    : options[0]?.value || "";
+
+  const targets = options.filter((option) => option.value !== state.comparison.left);
+  if (reset || !targets.some((option) => option.value === state.comparison.right)) {
+    state.comparison.right = defaultComparisonTarget(options, targets, comparingReleases);
   }
-  if (reset || !options.some((option) => option.value === state.comparison.right)) {
-    state.comparison.right = comparingReleases
-      ? options[0]?.value || ""
-      : preferredOption(options, "windows/amd64");
-  }
-  keepComparisonDistinct("left", options);
-  setSelectOptions(elements.compareLeftSelect, options, state.comparison.left);
-  setSelectOptions(elements.compareRightSelect, options, state.comparison.right);
+  setSelectOptions(elements.compareRightSelect, targets, state.comparison.right);
   renderComparison();
+}
+
+function defaultComparisonTarget(options, targets, comparingReleases) {
+  if (comparingReleases) {
+    const baselineIndex = options.findIndex((option) => option.value === state.comparison.left);
+    return options[baselineIndex + 1]?.value || options[baselineIndex - 1]?.value || targets[0]?.value || "";
+  }
+  return preferredOption(targets, "windows/amd64", "linux/amd64");
 }
 
 function preferredOption(options, ...values) {
@@ -471,24 +464,6 @@ function preferredOption(options, ...values) {
     }
   }
   return options[0]?.value || "";
-}
-
-function keepComparisonDistinct(changedSide, suppliedOptions) {
-  if (state.comparison.left !== state.comparison.right) {
-    return;
-  }
-  const options = suppliedOptions || [...elements.compareLeftSelect.options].map((option) => ({ value: option.value }));
-  const alternative = options.find((option) => option.value !== state.comparison.left)?.value;
-  if (!alternative) {
-    return;
-  }
-  if (changedSide === "left") {
-    state.comparison.right = alternative;
-    elements.compareRightSelect.value = alternative;
-  } else {
-    state.comparison.left = alternative;
-    elements.compareLeftSelect.value = alternative;
-  }
 }
 
 function setSelectOptions(select, options, selected) {
@@ -502,59 +477,14 @@ function setSelectOptions(select, options, selected) {
 }
 
 function synchronizeComparisonFromTop() {
-  if (elements.compareLeftSelect.disabled || elements.compareLeftSelect.options.length === 0) {
+  if (elements.compareRightSelect.disabled || elements.compareRightSelect.options.length === 0) {
     return;
   }
-
-  if (state.comparison.mode === "releases") {
-    if (state.comparison.context !== state.platform) {
-      state.comparison.context = state.platform;
-      elements.compareScope.textContent = platformLabel(state.comparison.context);
-      populateComparisonSides(false);
-    }
-    if (selectHasValue(elements.compareRightSelect, state.release)) {
-      state.comparison.right = state.release;
-      elements.compareRightSelect.value = state.release;
-      keepComparisonDistinct("right");
-      synchronizeComparisonSelectValues();
-      renderComparison();
-    }
-    return;
-  }
-
-  if (state.comparison.context !== state.release) {
-    state.comparison.context = state.release;
-    elements.compareScope.textContent = state.comparison.context;
-    populateComparisonSides(false);
-  }
-  if (selectHasValue(elements.compareLeftSelect, state.platform)) {
-    state.comparison.left = state.platform;
-    elements.compareLeftSelect.value = state.platform;
-    keepComparisonDistinct("left");
-    synchronizeComparisonSelectValues();
-    renderComparison();
-  }
-}
-
-function synchronizeTopFromComparison(changedSide) {
-  if (state.comparison.mode === "releases" && changedSide === "right") {
-    if (selectHasValue(elements.releaseSelect, state.comparison.right)) {
-      setRelease(state.comparison.right, false);
-    }
-    return;
-  }
-  if (state.comparison.mode === "platforms" && changedSide === "left") {
-    if (state.platform !== state.comparison.left && selectHasValue(elements.platformSelect, state.comparison.left)) {
-      state.platform = state.comparison.left;
-      elements.platformSelect.value = state.platform;
-      updatePlatform(false);
-    }
-  }
-}
-
-function synchronizeComparisonSelectValues() {
-  elements.compareLeftSelect.value = state.comparison.left;
-  elements.compareRightSelect.value = state.comparison.right;
+  state.comparison.context = state.comparison.mode === "releases" ? state.platform : state.release;
+  elements.compareScope.textContent = state.comparison.mode === "releases"
+    ? platformLabel(state.comparison.context)
+    : state.comparison.context;
+  populateComparisonSides(false);
 }
 
 function selectHasValue(select, value) {
