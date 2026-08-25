@@ -90,6 +90,32 @@
     </section>
 
     <section id="visuals" class="visuals" hidden>
+      <article class="panel panel--trend">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Toolchain</p>
+            <h2>Executable footprint over time</h2>
+          </div>
+          <span id="trendTarget" class="panel__context">—</span>
+        </header>
+        <div class="chart-frame chart-frame--large">
+          <canvas id="footprintChart" role="img" aria-label="Total shipped executable size by Go release"></canvas>
+        </div>
+      </article>
+
+      <article class="panel panel--tool">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Single binary</p>
+            <h2 id="toolChartTitle">Tool evolution</h2>
+          </div>
+          <span id="toolCoverage" class="panel__context">—</span>
+        </header>
+        <div class="chart-frame chart-frame--large">
+          <canvas id="toolChart" role="img" aria-label="Selected tool size by Go release"></canvas>
+        </div>
+      </article>
+
       <article class="panel panel--compare">
         <header class="panel__header compare-header">
           <div>
@@ -160,19 +186,6 @@
         </div>
       </article>
 
-      <article class="panel panel--trend">
-        <header class="panel__header">
-          <div>
-            <p class="eyebrow">Toolchain</p>
-            <h2>Executable footprint over time</h2>
-          </div>
-          <span id="trendTarget" class="panel__context">—</span>
-        </header>
-        <div class="chart-frame chart-frame--large">
-          <canvas id="footprintChart" role="img" aria-label="Total shipped executable size by Go release"></canvas>
-        </div>
-      </article>
-
       <article class="panel panel--snapshot">
         <header class="panel__header">
           <div>
@@ -196,19 +209,6 @@
         </header>
         <div class="chart-frame">
           <canvas id="countChart" role="img" aria-label="Number of shipped executable binaries by Go release"></canvas>
-        </div>
-      </article>
-
-      <article class="panel panel--tool">
-        <header class="panel__header">
-          <div>
-            <p class="eyebrow">Single binary</p>
-            <h2 id="toolChartTitle">Tool evolution</h2>
-          </div>
-          <span id="toolCoverage" class="panel__context">—</span>
-        </header>
-        <div class="chart-frame">
-          <canvas id="toolChart" role="img" aria-label="Selected tool size by Go release"></canvas>
         </div>
       </article>
 

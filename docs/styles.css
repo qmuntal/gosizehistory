@@ -729,6 +729,8 @@ td {
 
   .panel--trend,
   .panel--snapshot,
+  .panel--composition,
+  .panel--tool,
   .panel--compare,
   .panel--table {
     grid-column: 1 / -1;

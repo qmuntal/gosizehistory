@@ -211,7 +211,7 @@ function populatePlatformSelect() {
   elements.platformSelect.replaceChildren(...keys.map((key) => {
     const option = document.createElement("option");
     option.value = key;
-    option.textContent = `${platformLabel(key)} · ${coverage.get(key)}/${state.releases.length}`;
+    option.textContent = platformLabel(key);
     return option;
   }));
 
@@ -266,7 +266,7 @@ function populateToolSelect(rows) {
   elements.toolSelect.replaceChildren(...names.map((name) => {
     const option = document.createElement("option");
     option.value = name;
-    option.textContent = `${name} · ${coverage.get(name)}/${rows.length}`;
+    option.textContent = name;
     return option;
   }));
 
@@ -322,7 +322,8 @@ function updateFootprintChart() {
 
 function updateCountChart() {
   const options = commonChartOptions((context) => `${context.parsed.y} binaries`, selectReleaseFromChart);
-  options.scales.y.ticks = { precision: 0 };
+  options.scales.y.title.display = false;
+  options.scales.y.ticks = { precision: 0, maxTicksLimit: 6 };
   options.plugins.legend.display = false;
 
   destroyChart("count");
@@ -388,10 +389,7 @@ function updateSnapshotChart(row) {
       maintainAspectRatio: false,
       scales: {
         x: {
-          beginAtZero: true,
-          grid: { color: "rgba(82, 97, 104, 0.12)" },
-          border: { display: false },
-          ticks: { callback: (value) => `${Math.round(value / MEBIBYTE)} MiB` },
+          ...byteAxisOptions(),
         },
         y: { grid: { display: false } },
       },
@@ -399,6 +397,7 @@ function updateSnapshotChart(row) {
         legend: { display: false },
         tooltip: { callbacks: { label: (context) => formatTooltip(context.label, context.parsed.x) } },
       },
+      layout: { padding: { right: 8 } },
     },
   });
 }
@@ -592,10 +591,7 @@ function updateComparisonChart(left, right, tools) {
       interaction: { mode: "index", intersect: false },
       scales: {
         x: {
-          beginAtZero: true,
-          grid: { color: "rgba(82, 97, 104, 0.12)" },
-          border: { display: false },
-          ticks: { callback: (value) => `${Math.round(value / MEBIBYTE)} MiB` },
+          ...byteAxisOptions(),
         },
         y: { grid: { display: false } },
       },
@@ -603,6 +599,7 @@ function updateComparisonChart(left, right, tools) {
         legend: { position: "bottom", align: "start" },
         tooltip: { callbacks: { label: (context) => formatTooltip(context.dataset.label, context.parsed.x) } },
       },
+      layout: { padding: { right: 8 } },
     },
   });
 }
@@ -700,21 +697,53 @@ function commonChartOptions(tooltipLabel, onClick, stacked = false) {
       x: {
         stacked,
         grid: { display: false },
-        ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 14 },
+        ticks: {
+          maxRotation: 0,
+          autoSkip: true,
+          autoSkipPadding: 12,
+          maxTicksLimit: 9,
+          callback(value) {
+            return minorVersionLabel(this.getLabelForValue(value));
+          },
+        },
       },
       y: {
         stacked,
-        beginAtZero: true,
-        grid: { color: "rgba(82, 97, 104, 0.12)" },
-        border: { display: false },
-        ticks: { callback: (value) => `${Math.round(value / MEBIBYTE)} MiB` },
+        ...byteAxisOptions(),
       },
     },
     plugins: {
       legend: { position: "bottom", align: "start" },
       tooltip: { callbacks: { label: tooltipLabel } },
     },
+    layout: { padding: { right: 8 } },
   };
+}
+
+function byteAxisOptions() {
+  return {
+    beginAtZero: true,
+    grid: { color: "rgba(82, 97, 104, 0.12)" },
+    border: { display: false },
+    title: {
+      display: true,
+      text: "MiB",
+      color: COLORS.inkSoft,
+      font: { family: "IBM Plex Mono", size: 9, weight: "500" },
+      padding: { top: 5 },
+    },
+    ticks: {
+      autoSkip: true,
+      autoSkipPadding: 12,
+      maxTicksLimit: 6,
+      callback: (value) => Math.round(value / MEBIBYTE),
+    },
+  };
+}
+
+function minorVersionLabel(version) {
+  const parts = version.replace(/^go/, "").split(".");
+  return parts.length >= 2 ? `${parts[0]}.${parts[1]}` : version;
 }
 
 function lineDataset(label, data, borderColor, backgroundColor) {
