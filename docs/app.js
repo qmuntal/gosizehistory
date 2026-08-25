@@ -262,10 +262,7 @@ function populateToolSelect(rows) {
     }
   }
 
-  const names = [...coverage.keys()].sort((left, right) => {
-    const coverageDifference = coverage.get(right) - coverage.get(left);
-    return coverageDifference || left.localeCompare(right);
-  });
+  const names = [...coverage.keys()].sort(compareAlphaNumeric);
   elements.toolSelect.replaceChildren(...names.map((name) => {
     const option = document.createElement("option");
     option.value = name;
@@ -901,7 +898,11 @@ function showError(error) {
 }
 
 function comparePlatformKeys(left, right) {
-  return platformLabel(left).localeCompare(platformLabel(right), "en", {
+  return compareAlphaNumeric(platformLabel(left), platformLabel(right));
+}
+
+function compareAlphaNumeric(left, right) {
+  return left.localeCompare(right, "en", {
     numeric: true,
     sensitivity: "base",
   });
