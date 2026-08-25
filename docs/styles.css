@@ -96,6 +96,25 @@ a {
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.22));
 }
 
+.brand__byline {
+  margin: 6px 0 0;
+  color: #aebdc2;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.brand__byline a {
+  color: #d9e5e8;
+  font-weight: 600;
+  text-decoration-color: rgba(217, 229, 232, 0.45);
+  text-underline-offset: 2px;
+}
+
+.brand__byline a:hover {
+  color: var(--surface);
+}
+
 .eyebrow {
   margin: 0 0 5px;
   color: var(--cyan-dark);
