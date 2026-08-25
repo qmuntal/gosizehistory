@@ -101,7 +101,7 @@ Each API archive remains a separate platform record. This matters for historical
 
 ## Dashboard
 
-The static dashboard lives in `docs/` and reads the versioned snapshot at `docs/data/go-tool-sizes.json`. It includes linked distribution, executable-footprint, release-composition, and individual-tool charts, plus CSV and JSON exports.
+The static dashboard lives in `docs/` and reads the versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Its comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release, including per-binary additions, removals, and size deltas.
 
 Preview it locally from the repository root:
 

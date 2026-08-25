@@ -55,22 +55,43 @@ const elements = {
   generatedAt: document.querySelector("#generatedAt"),
   datasetRange: document.querySelector("#datasetRange"),
   trendTarget: document.querySelector("#trendTarget"),
-  latestArchive: document.querySelector("#latestArchive"),
+  latestFootprint: document.querySelector("#latestFootprint"),
   latestRelease: document.querySelector("#latestRelease"),
-  archiveChange: document.querySelector("#archiveChange"),
+  footprintChange: document.querySelector("#footprintChange"),
   firstRelease: document.querySelector("#firstRelease"),
-  peakArchive: document.querySelector("#peakArchive"),
+  peakFootprint: document.querySelector("#peakFootprint"),
   peakRelease: document.querySelector("#peakRelease"),
   releaseCoverage: document.querySelector("#releaseCoverage"),
-  archiveCount: document.querySelector("#archiveCount"),
+  releaseCount: document.querySelector("#releaseCount"),
   snapshotTitle: document.querySelector("#snapshotTitle"),
   snapshotTotal: document.querySelector("#snapshotTotal"),
-  topTools: document.querySelector("#topTools"),
   toolChartTitle: document.querySelector("#toolChartTitle"),
   toolCoverage: document.querySelector("#toolCoverage"),
   toolColumnHeader: document.querySelector("#toolColumnHeader"),
   releaseTable: document.querySelector("#releaseTable"),
   tableCount: document.querySelector("#tableCount"),
+  compareModeButtons: [...document.querySelectorAll("[data-compare-mode]")],
+  compareContextLabel: document.querySelector("#compareContextLabel"),
+  compareContextSelect: document.querySelector("#compareContextSelect"),
+  compareLeftLabel: document.querySelector("#compareLeftLabel"),
+  compareLeftSelect: document.querySelector("#compareLeftSelect"),
+  compareRightLabel: document.querySelector("#compareRightLabel"),
+  compareRightSelect: document.querySelector("#compareRightSelect"),
+  compareLeftName: document.querySelector("#compareLeftName"),
+  compareRightName: document.querySelector("#compareRightName"),
+  compareLeftTotal: document.querySelector("#compareLeftTotal"),
+  compareRightTotal: document.querySelector("#compareRightTotal"),
+  compareLeftCount: document.querySelector("#compareLeftCount"),
+  compareRightCount: document.querySelector("#compareRightCount"),
+  compareLeftLargest: document.querySelector("#compareLeftLargest"),
+  compareRightLargest: document.querySelector("#compareRightLargest"),
+  compareLeftAverage: document.querySelector("#compareLeftAverage"),
+  compareRightAverage: document.querySelector("#compareRightAverage"),
+  compareDelta: document.querySelector("#compareDelta"),
+  compareDeltaBytes: document.querySelector("#compareDeltaBytes"),
+  compareTableLeft: document.querySelector("#compareTableLeft"),
+  compareTableRight: document.querySelector("#compareTableRight"),
+  compareTable: document.querySelector("#compareTable"),
 };
 
 const state = {
@@ -80,6 +101,12 @@ const state = {
   release: "",
   tool: "compile",
   rows: [],
+  comparison: {
+    mode: "releases",
+    context: "",
+    left: "",
+    right: "",
+  },
   charts: {},
 };
 
@@ -106,6 +133,7 @@ async function initialize() {
     populatePlatformSelect();
     bindControls();
     updatePlatform();
+    configureComparison(true);
     updateDatasetMeta();
 
     elements.status.hidden = true;
@@ -153,6 +181,29 @@ function bindControls() {
     updateTable();
   });
   elements.downloadCsv.addEventListener("click", downloadCsv);
+  for (const button of elements.compareModeButtons) {
+    button.addEventListener("click", () => {
+      if (state.comparison.mode === button.dataset.compareMode) {
+        return;
+      }
+      state.comparison.mode = button.dataset.compareMode;
+      configureComparison(true);
+    });
+  }
+  elements.compareContextSelect.addEventListener("change", () => {
+    state.comparison.context = elements.compareContextSelect.value;
+    populateComparisonSides(true);
+  });
+  elements.compareLeftSelect.addEventListener("change", () => {
+    state.comparison.left = elements.compareLeftSelect.value;
+    keepComparisonDistinct("left");
+    renderComparison();
+  });
+  elements.compareRightSelect.addEventListener("change", () => {
+    state.comparison.right = elements.compareRightSelect.value;
+    keepComparisonDistinct("right");
+    renderComparison();
+  });
 }
 
 function populatePlatformSelect() {
@@ -193,8 +244,8 @@ function updatePlatform() {
   populateReleaseSelect(availableRows);
   populateToolSelect(availableRows);
   updateMetrics(availableRows);
-  updateArchiveChart();
-  updateCompositionChart();
+  updateFootprintChart();
+  updateCountChart();
   updateToolChart();
   updateSnapshot();
   updateTable();
@@ -241,15 +292,11 @@ function makeRow(release, platform) {
   if (!platform) {
     return { version: release.version, platform: null };
   }
-  const commands = sum(platform.tools.filter((tool) => tool.category === "command").map((tool) => tool.size));
-  const internalTools = sum(platform.tools.filter((tool) => tool.category === "tool").map((tool) => tool.size));
+  const executablePayload = sum(platform.tools.map((tool) => tool.size));
   return {
     version: release.version,
     platform,
-    archive: platform.archive.size,
-    commands,
-    internalTools,
-    executablePayload: commands + internalTools,
+    executablePayload,
     toolCount: platform.tools.length,
   };
 }
@@ -257,47 +304,49 @@ function makeRow(release, platform) {
 function updateMetrics(rows) {
   const first = rows[0];
   const latest = rows.at(-1);
-  const peak = rows.reduce((largest, row) => row.archive > largest.archive ? row : largest, rows[0]);
-  const change = ((latest.archive / first.archive) - 1) * 100;
+  const peak = rows.reduce((largest, row) => row.executablePayload > largest.executablePayload ? row : largest, rows[0]);
+  const change = ((latest.executablePayload / first.executablePayload) - 1) * 100;
 
-  elements.latestArchive.textContent = formatBytes(latest.archive);
+  elements.latestFootprint.textContent = formatBytes(latest.executablePayload);
   elements.latestRelease.textContent = latest.version;
-  elements.archiveChange.textContent = formatPercent(change);
-  elements.archiveChange.className = change >= 0 ? "delta-positive" : "delta-negative";
+  elements.footprintChange.textContent = formatPercent(change);
+  elements.footprintChange.className = change >= 0 ? "delta-positive" : "delta-negative";
   elements.firstRelease.textContent = `from ${first.version}`;
-  elements.peakArchive.textContent = formatBytes(peak.archive);
+  elements.peakFootprint.textContent = formatBytes(peak.executablePayload);
   elements.peakRelease.textContent = peak.version;
   elements.releaseCoverage.textContent = `${rows.length} / ${state.releases.length}`;
-  elements.archiveCount.textContent = `${pluralize(rows.length, "archive")} measured`;
+  elements.releaseCount.textContent = `${pluralize(rows.length, "release")} measured`;
 }
 
-function updateArchiveChart() {
-  destroyChart("archive");
-  state.charts.archive = new Chart(document.querySelector("#archiveChart"), {
+function updateFootprintChart() {
+  destroyChart("footprint");
+  state.charts.footprint = new Chart(document.querySelector("#footprintChart"), {
     type: "line",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
       datasets: [
-        lineDataset("Distribution archive", state.rows.map((row) => row.platform ? row.archive : null), COLORS.cyan, COLORS.cyanFill),
-        lineDataset("Executable payload", state.rows.map((row) => row.platform ? row.executablePayload : null), COLORS.coral, COLORS.coralFill),
+        lineDataset("Total executables", state.rows.map((row) => row.platform ? row.executablePayload : null), COLORS.cyan, COLORS.cyanFill),
       ],
     },
     options: commonChartOptions((context) => formatTooltip(context.dataset.label, context.parsed.y), selectReleaseFromChart),
   });
 }
 
-function updateCompositionChart() {
-  destroyChart("composition");
-  state.charts.composition = new Chart(document.querySelector("#compositionChart"), {
+function updateCountChart() {
+  const options = commonChartOptions((context) => `${context.parsed.y} binaries`, selectReleaseFromChart);
+  options.scales.y.ticks = { precision: 0 };
+  options.plugins.legend.display = false;
+
+  destroyChart("count");
+  state.charts.count = new Chart(document.querySelector("#countChart"), {
     type: "bar",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
       datasets: [
-        barDataset("Commands", state.rows.map((row) => row.platform ? row.commands : null), COLORS.yellow),
-        barDataset("Internal tools", state.rows.map((row) => row.platform ? row.internalTools : null), COLORS.green),
+        barDataset("Binaries", state.rows.map((row) => row.platform ? row.toolCount : null), COLORS.green),
       ],
     },
-    options: commonChartOptions((context) => formatTooltip(context.dataset.label, context.parsed.y), selectReleaseFromChart, true),
+    options,
   });
 }
 
@@ -325,56 +374,301 @@ function updateSnapshot() {
     return;
   }
 
-  elements.snapshotTitle.textContent = `${row.version} snapshot`;
+  elements.snapshotTitle.textContent = `${row.version} largest binaries`;
   elements.snapshotTotal.textContent = formatBytes(row.executablePayload);
   updateSnapshotChart(row);
-  updateTopTools(row);
 }
 
 function updateSnapshotChart(row) {
+  const tools = [...row.platform.tools].sort((left, right) => right.size - left.size).slice(0, 8);
   destroyChart("snapshot");
   state.charts.snapshot = new Chart(document.querySelector("#snapshotChart"), {
-    type: "doughnut",
+    type: "bar",
     data: {
-      labels: ["Commands", "Internal tools"],
+      labels: tools.map((tool) => tool.name),
       datasets: [{
-        data: [row.commands, row.internalTools],
-        backgroundColor: [COLORS.yellow, COLORS.green],
-        borderColor: "#ffffff",
-        borderWidth: 3,
-        hoverOffset: 4,
+        label: "Binary size",
+        data: tools.map((tool) => tool.size),
+        backgroundColor: COLORS.coral,
+        borderRadius: 2,
+        maxBarThickness: 22,
       }],
     },
     options: {
+      indexAxis: "y",
       responsive: true,
       maintainAspectRatio: false,
-      cutout: "66%",
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: "rgba(82, 97, 104, 0.12)" },
+          border: { display: false },
+          ticks: { callback: (value) => `${Math.round(value / MEBIBYTE)} MiB` },
+        },
+        y: { grid: { display: false } },
+      },
       plugins: {
-        legend: { position: "bottom" },
-        tooltip: { callbacks: { label: (context) => formatTooltip(context.label, context.parsed) } },
+        legend: { display: false },
+        tooltip: { callbacks: { label: (context) => formatTooltip(context.label, context.parsed.x) } },
       },
     },
   });
 }
 
-function updateTopTools(row) {
-  const tools = [...row.platform.tools].sort((left, right) => right.size - left.size).slice(0, 5);
-  const largest = tools[0]?.size || 1;
-  elements.topTools.replaceChildren(...tools.map((tool) => {
-    const item = document.createElement("li");
-    const name = document.createElement("span");
-    name.className = "tool-name";
-    name.textContent = tool.name;
-    const size = document.createElement("span");
-    size.className = "tool-size";
-    size.textContent = formatBytes(tool.size);
-    const bar = document.createElement("span");
-    bar.className = "tool-bar";
-    const fill = document.createElement("span");
-    fill.style.width = `${Math.max(3, (tool.size / largest) * 100)}%`;
-    bar.append(fill);
-    item.append(name, size, bar);
-    return item;
+function configureComparison(reset) {
+  const comparingReleases = state.comparison.mode === "releases";
+  for (const button of elements.compareModeButtons) {
+    button.setAttribute("aria-pressed", String(button.dataset.compareMode === state.comparison.mode));
+  }
+
+  elements.compareContextLabel.textContent = comparingReleases ? "Platform" : "Release";
+  elements.compareLeftLabel.textContent = comparingReleases ? "Release A" : "Platform A";
+  elements.compareRightLabel.textContent = comparingReleases ? "Release B" : "Platform B";
+
+  const contextOptions = comparingReleases ? comparisonPlatformOptions() : comparisonReleaseOptions();
+  const preferredContext = comparingReleases ? state.platform : state.release;
+  if (reset || !contextOptions.some((option) => option.value === state.comparison.context)) {
+    state.comparison.context = contextOptions.some((option) => option.value === preferredContext)
+      ? preferredContext
+      : contextOptions[0]?.value || "";
+  }
+  setSelectOptions(elements.compareContextSelect, contextOptions, state.comparison.context);
+  elements.compareContextSelect.disabled = false;
+  elements.compareLeftSelect.disabled = false;
+  elements.compareRightSelect.disabled = false;
+  populateComparisonSides(true);
+}
+
+function comparisonPlatformOptions() {
+  const coverage = new Map();
+  for (const release of state.releases) {
+    for (const key of uniquePlatformKeys(release)) {
+      coverage.set(key, (coverage.get(key) || 0) + 1);
+    }
+  }
+  return [...coverage.entries()]
+    .filter(([, count]) => count >= 2)
+    .sort((left, right) => right[1] - left[1] || platformLabel(left[0]).localeCompare(platformLabel(right[0])))
+    .map(([key, count]) => ({ value: key, label: `${platformLabel(key)} · ${count}/${state.releases.length}` }));
+}
+
+function comparisonReleaseOptions() {
+  return [...state.releases]
+    .reverse()
+    .filter((release) => uniquePlatformKeys(release).length >= 2)
+    .map((release) => ({ value: release.version, label: release.version }));
+}
+
+function populateComparisonSides(reset) {
+  const comparingReleases = state.comparison.mode === "releases";
+  let options;
+  if (comparingReleases) {
+    options = [...state.releases]
+      .reverse()
+      .filter((release) => preferredPlatform(release, state.comparison.context))
+      .map((release) => ({ value: release.version, label: release.version }));
+  } else {
+    const release = releaseByVersion(state.comparison.context);
+    options = uniquePlatformKeys(release)
+      .sort((left, right) => platformLabel(left).localeCompare(platformLabel(right)))
+      .map((key) => ({ value: key, label: platformLabel(key) }));
+  }
+
+  if (reset || !options.some((option) => option.value === state.comparison.left)) {
+    state.comparison.left = comparingReleases
+      ? options[1]?.value || options[0]?.value || ""
+      : preferredOption(options, state.platform, "linux/amd64");
+  }
+  if (reset || !options.some((option) => option.value === state.comparison.right)) {
+    state.comparison.right = comparingReleases
+      ? options[0]?.value || ""
+      : preferredOption(options, "windows/amd64");
+  }
+  keepComparisonDistinct("left", options);
+  setSelectOptions(elements.compareLeftSelect, options, state.comparison.left);
+  setSelectOptions(elements.compareRightSelect, options, state.comparison.right);
+  renderComparison();
+}
+
+function preferredOption(options, ...values) {
+  for (const value of values) {
+    if (options.some((option) => option.value === value)) {
+      return value;
+    }
+  }
+  return options[0]?.value || "";
+}
+
+function keepComparisonDistinct(changedSide, suppliedOptions) {
+  if (state.comparison.left !== state.comparison.right) {
+    return;
+  }
+  const options = suppliedOptions || [...elements.compareLeftSelect.options].map((option) => ({ value: option.value }));
+  const alternative = options.find((option) => option.value !== state.comparison.left)?.value;
+  if (!alternative) {
+    return;
+  }
+  if (changedSide === "left") {
+    state.comparison.right = alternative;
+    elements.compareRightSelect.value = alternative;
+  } else {
+    state.comparison.left = alternative;
+    elements.compareLeftSelect.value = alternative;
+  }
+}
+
+function setSelectOptions(select, options, selected) {
+  select.replaceChildren(...options.map((item) => {
+    const option = document.createElement("option");
+    option.value = item.value;
+    option.textContent = item.label;
+    return option;
+  }));
+  select.value = selected;
+}
+
+function renderComparison() {
+  const entries = comparisonEntries();
+  if (!entries) {
+    return;
+  }
+  const left = summarizePlatform(entries.left.label, entries.left.platform);
+  const right = summarizePlatform(entries.right.label, entries.right.platform);
+  const delta = right.total - left.total;
+  const percent = left.total === 0 ? 0 : (delta / left.total) * 100;
+
+  renderComparisonSide("left", left);
+  renderComparisonSide("right", right);
+  elements.compareDelta.textContent = formatPercent(percent);
+  elements.compareDelta.className = percent >= 0 ? "delta-positive" : "delta-negative";
+  elements.compareDeltaBytes.textContent = formatSignedBytes(delta);
+  elements.compareTableLeft.textContent = left.label;
+  elements.compareTableRight.textContent = right.label;
+
+  const tools = comparisonTools(left, right);
+  updateComparisonChart(left, right, tools.slice(0, 12));
+  updateComparisonTable(tools);
+}
+
+function comparisonEntries() {
+  if (state.comparison.mode === "releases") {
+    const leftRelease = releaseByVersion(state.comparison.left);
+    const rightRelease = releaseByVersion(state.comparison.right);
+    const leftPlatform = preferredPlatform(leftRelease, state.comparison.context);
+    const rightPlatform = preferredPlatform(rightRelease, state.comparison.context);
+    if (!leftPlatform || !rightPlatform) {
+      return null;
+    }
+    return {
+      left: { label: leftRelease.version, platform: leftPlatform },
+      right: { label: rightRelease.version, platform: rightPlatform },
+    };
+  }
+
+  const release = releaseByVersion(state.comparison.context);
+  const leftPlatform = preferredPlatform(release, state.comparison.left);
+  const rightPlatform = preferredPlatform(release, state.comparison.right);
+  if (!leftPlatform || !rightPlatform) {
+    return null;
+  }
+  return {
+    left: { label: platformLabel(state.comparison.left), platform: leftPlatform },
+    right: { label: platformLabel(state.comparison.right), platform: rightPlatform },
+  };
+}
+
+function summarizePlatform(label, platform) {
+  const byTool = new Map(platform.tools.map((tool) => [tool.name, tool.size]));
+  const tools = [...platform.tools].sort((left, right) => right.size - left.size);
+  const total = sum(tools.map((tool) => tool.size));
+  return {
+    label,
+    total,
+    count: tools.length,
+    average: tools.length === 0 ? 0 : total / tools.length,
+    largest: tools[0] || null,
+    byTool,
+  };
+}
+
+function renderComparisonSide(side, summary) {
+  const title = side === "left" ? elements.compareLeftName : elements.compareRightName;
+  const total = side === "left" ? elements.compareLeftTotal : elements.compareRightTotal;
+  const count = side === "left" ? elements.compareLeftCount : elements.compareRightCount;
+  const largest = side === "left" ? elements.compareLeftLargest : elements.compareRightLargest;
+  const average = side === "left" ? elements.compareLeftAverage : elements.compareRightAverage;
+  title.textContent = summary.label;
+  total.textContent = formatBytes(summary.total);
+  count.textContent = String(summary.count);
+  largest.textContent = summary.largest ? `${summary.largest.name} · ${formatBytes(summary.largest.size)}` : "—";
+  average.textContent = formatBytes(summary.average);
+}
+
+function comparisonTools(left, right) {
+  const names = new Set([...left.byTool.keys(), ...right.byTool.keys()]);
+  return [...names].map((name) => ({
+    name,
+    left: left.byTool.get(name) ?? null,
+    right: right.byTool.get(name) ?? null,
+  })).sort((first, second) => Math.max(second.left || 0, second.right || 0) - Math.max(first.left || 0, first.right || 0));
+}
+
+function updateComparisonChart(left, right, tools) {
+  destroyChart("comparison");
+  state.charts.comparison = new Chart(document.querySelector("#comparisonChart"), {
+    type: "bar",
+    data: {
+      labels: tools.map((tool) => tool.name),
+      datasets: [
+        barDataset(left.label, tools.map((tool) => tool.left || 0), COLORS.cyan),
+        barDataset(right.label, tools.map((tool) => tool.right || 0), COLORS.coral),
+      ],
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: "rgba(82, 97, 104, 0.12)" },
+          border: { display: false },
+          ticks: { callback: (value) => `${Math.round(value / MEBIBYTE)} MiB` },
+        },
+        y: { grid: { display: false } },
+      },
+      plugins: {
+        legend: { position: "bottom", align: "start" },
+        tooltip: { callbacks: { label: (context) => formatTooltip(context.dataset.label, context.parsed.x) } },
+      },
+    },
+  });
+}
+
+function updateComparisonTable(tools) {
+  elements.compareTable.replaceChildren(...tools.map((tool) => {
+    const row = document.createElement("tr");
+    let delta = "—";
+    let deltaClass = "";
+    if (tool.left === null) {
+      delta = "New";
+      deltaClass = "delta-positive";
+    } else if (tool.right === null) {
+      delta = "Removed";
+      deltaClass = "delta-negative";
+    } else if (tool.left > 0) {
+      const percent = ((tool.right / tool.left) - 1) * 100;
+      delta = formatPercent(percent);
+      deltaClass = percent >= 0 ? "delta-positive" : "delta-negative";
+    }
+    row.append(
+      cell(tool.name, "release-cell"),
+      cell(tool.left === null ? "—" : formatBytes(tool.left)),
+      cell(tool.right === null ? "—" : formatBytes(tool.right)),
+      cell(delta, deltaClass),
+    );
+    return row;
   }));
 }
 
@@ -384,8 +678,9 @@ function updateTable() {
   elements.releaseTable.replaceChildren(...[...rows].reverse().map((row) => {
     const chronologicalIndex = rows.indexOf(row);
     const previous = chronologicalIndex > 0 ? rows[chronologicalIndex - 1] : null;
-    const change = previous ? ((row.archive / previous.archive) - 1) * 100 : null;
+    const change = previous ? ((row.executablePayload / previous.executablePayload) - 1) * 100 : null;
     const selectedTool = toolForRow(row, state.tool);
+    const largest = [...row.platform.tools].sort((left, right) => right.size - left.size)[0];
 
     const tableRow = document.createElement("tr");
     if (row.version === state.release) {
@@ -394,12 +689,11 @@ function updateTable() {
     tableRow.addEventListener("click", () => setRelease(row.version));
     tableRow.append(
       cell(row.version, "release-cell"),
-      cell(formatBytes(row.archive)),
-      cell(change === null ? "—" : formatPercent(change), change === null ? "" : change >= 0 ? "delta-positive" : "delta-negative"),
       cell(formatBytes(row.executablePayload)),
+      cell(change === null ? "—" : formatPercent(change), change === null ? "" : change >= 0 ? "delta-positive" : "delta-negative"),
       cell(selectedTool ? formatBytes(selectedTool.size) : "—"),
       cell(String(row.toolCount)),
-      cell(row.platform.archive.filename, "artifact-cell", row.platform.archive.filename),
+      cell(largest ? `${largest.name} · ${formatBytes(largest.size)}` : "—", "binary-cell"),
     );
     return tableRow;
   }));
@@ -494,11 +788,25 @@ function destroyChart(name) {
 }
 
 function preferredPlatform(release, key) {
+  if (!release) {
+    return null;
+  }
   const candidates = release.platforms.filter((platform) => platformKey(platform) === key);
   if (candidates.length < 2) {
     return candidates[0] || null;
   }
   return [...candidates].sort((left, right) => archivePreference(left) - archivePreference(right) || left.archive.filename.localeCompare(right.archive.filename)).at(-1);
+}
+
+function releaseByVersion(version) {
+  return state.releases.find((release) => release.version === version) || null;
+}
+
+function uniquePlatformKeys(release) {
+  if (!release) {
+    return [];
+  }
+  return [...new Set(release.platforms.map(platformKey))];
 }
 
 function archivePreference(platform) {
@@ -555,19 +863,18 @@ function updateDatasetMeta() {
 
 function downloadCsv() {
   const [os, arch] = state.platform.split("/");
-  const header = ["release", "os", "arch", "archive_filename", "archive_bytes", "executable_payload_bytes", "command_bytes", "internal_tool_bytes", "tool_count"];
+  const header = ["release", "os", "arch", "executable_payload_bytes", "binary_count", "largest_binary", "largest_binary_bytes"];
   const lines = [header.join(",")];
   for (const row of state.rows.filter((candidate) => candidate.platform)) {
+    const largest = [...row.platform.tools].sort((left, right) => right.size - left.size)[0];
     lines.push([
       row.version,
       os,
       arch,
-      row.platform.archive.filename,
-      row.archive,
       row.executablePayload,
-      row.commands,
-      row.internalTools,
       row.toolCount,
+      largest?.name || "",
+      largest?.size || 0,
     ].map(csvValue).join(","));
   }
 
@@ -602,6 +909,13 @@ function formatTooltip(label, bytes) {
 function formatPercent(value) {
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(1)}%`;
+}
+
+function formatSignedBytes(bytes) {
+  if (bytes === 0) {
+    return "0 MiB";
+  }
+  return `${bytes > 0 ? "+" : "−"}${formatBytes(Math.abs(bytes))}`;
 }
 
 function pluralize(count, noun) {

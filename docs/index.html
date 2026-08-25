@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Interactive history of Go distribution and toolchain binary sizes across releases and platforms.">
+  <meta name="description" content="Interactive history of Go toolchain executable sizes across releases and platforms.">
   <title>Go Size History</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,38 +67,116 @@
 
     <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
       <article class="metric metric--cyan">
-        <p>Latest archive</p>
-        <strong id="latestArchive">—</strong>
+        <p>Latest footprint</p>
+        <strong id="latestFootprint">—</strong>
         <span id="latestRelease">—</span>
       </article>
       <article class="metric metric--coral">
         <p>Change since first</p>
-        <strong id="archiveChange">—</strong>
+        <strong id="footprintChange">—</strong>
         <span id="firstRelease">—</span>
       </article>
       <article class="metric metric--yellow">
-        <p>Peak archive</p>
-        <strong id="peakArchive">—</strong>
+        <p>Peak footprint</p>
+        <strong id="peakFootprint">—</strong>
         <span id="peakRelease">—</span>
       </article>
       <article class="metric metric--green">
         <p>Release coverage</p>
         <strong id="releaseCoverage">—</strong>
-        <span id="archiveCount">—</span>
+        <span id="releaseCount">—</span>
       </article>
     </section>
 
     <section id="visuals" class="visuals" hidden>
+      <article class="panel panel--compare">
+        <header class="panel__header compare-header">
+          <div>
+            <p class="eyebrow">Compare</p>
+            <h2>Toolchains side by side</h2>
+          </div>
+          <div class="segmented" role="group" aria-label="Comparison mode">
+            <button class="segmented__button" type="button" data-compare-mode="releases" aria-pressed="true">Releases</button>
+            <button class="segmented__button" type="button" data-compare-mode="platforms" aria-pressed="false">Platforms</button>
+          </div>
+        </header>
+
+        <div class="compare-controls">
+          <div class="field compare-context">
+            <label id="compareContextLabel" for="compareContextSelect">Platform</label>
+            <select id="compareContextSelect" disabled></select>
+          </div>
+          <div class="field">
+            <label id="compareLeftLabel" for="compareLeftSelect">Release A</label>
+            <select id="compareLeftSelect" disabled></select>
+          </div>
+          <span class="compare-vs" aria-hidden="true">vs</span>
+          <div class="field">
+            <label id="compareRightLabel" for="compareRightSelect">Release B</label>
+            <select id="compareRightSelect" disabled></select>
+          </div>
+        </div>
+
+        <div class="compare-summary">
+          <section class="compare-side compare-side--left" aria-labelledby="compareLeftName">
+            <p class="eyebrow">A</p>
+            <h3 id="compareLeftName">—</h3>
+            <strong id="compareLeftTotal">—</strong>
+            <dl>
+              <div><dt>Binaries</dt><dd id="compareLeftCount">—</dd></div>
+              <div><dt>Largest</dt><dd id="compareLeftLargest">—</dd></div>
+              <div><dt>Average</dt><dd id="compareLeftAverage">—</dd></div>
+            </dl>
+          </section>
+
+          <div class="compare-delta" aria-label="Total footprint difference">
+            <span>B vs A</span>
+            <strong id="compareDelta">—</strong>
+            <small id="compareDeltaBytes">—</small>
+          </div>
+
+          <section class="compare-side compare-side--right" aria-labelledby="compareRightName">
+            <p class="eyebrow">B</p>
+            <h3 id="compareRightName">—</h3>
+            <strong id="compareRightTotal">—</strong>
+            <dl>
+              <div><dt>Binaries</dt><dd id="compareRightCount">—</dd></div>
+              <div><dt>Largest</dt><dd id="compareRightLargest">—</dd></div>
+              <div><dt>Average</dt><dd id="compareRightAverage">—</dd></div>
+            </dl>
+          </section>
+        </div>
+
+        <div class="comparison-body">
+          <div class="chart-frame chart-frame--compare">
+            <canvas id="comparisonChart" role="img" aria-label="Largest binaries compared side by side"></canvas>
+          </div>
+          <div class="compare-table-wrap">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th scope="col">Binary</th>
+                  <th scope="col" id="compareTableLeft">A</th>
+                  <th scope="col" id="compareTableRight">B</th>
+                  <th scope="col">Delta</th>
+                </tr>
+              </thead>
+              <tbody id="compareTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
       <article class="panel panel--trend">
         <header class="panel__header">
           <div>
-            <p class="eyebrow">Distribution</p>
-            <h2>Archive vs executable payload</h2>
+            <p class="eyebrow">Toolchain</p>
+            <h2>Executable footprint over time</h2>
           </div>
           <span id="trendTarget" class="panel__context">—</span>
         </header>
         <div class="chart-frame chart-frame--large">
-          <canvas id="archiveChart" role="img" aria-label="Distribution archive and executable payload size by Go release"></canvas>
+          <canvas id="footprintChart" role="img" aria-label="Total shipped executable size by Go release"></canvas>
         </div>
       </article>
 
@@ -106,28 +184,25 @@
         <header class="panel__header">
           <div>
             <p class="eyebrow">Selected release</p>
-            <h2 id="snapshotTitle">Release snapshot</h2>
+            <h2 id="snapshotTitle">Largest binaries</h2>
           </div>
           <span id="snapshotTotal" class="panel__context">—</span>
         </header>
-        <div class="snapshot-layout">
-          <div class="chart-frame chart-frame--donut">
-            <canvas id="snapshotChart" role="img" aria-label="Command and internal tool share for the selected release"></canvas>
-          </div>
-          <ol id="topTools" class="top-tools" aria-label="Largest executable tools"></ol>
+        <div class="chart-frame chart-frame--snapshot">
+          <canvas id="snapshotChart" role="img" aria-label="Largest executable binaries in the selected release"></canvas>
         </div>
       </article>
 
       <article class="panel panel--composition">
         <header class="panel__header">
           <div>
-            <p class="eyebrow">Composition</p>
-            <h2>Shipped executable footprint</h2>
+            <p class="eyebrow">Inventory</p>
+            <h2>Shipped binary count</h2>
           </div>
-          <span class="panel__context">Commands + internal tools</span>
+          <span class="panel__context">All executables</span>
         </header>
         <div class="chart-frame">
-          <canvas id="compositionChart" role="img" aria-label="Stacked command and internal tool sizes by Go release"></canvas>
+          <canvas id="countChart" role="img" aria-label="Number of shipped executable binaries by Go release"></canvas>
         </div>
       </article>
 
@@ -148,7 +223,7 @@
         <header class="panel__header">
           <div>
             <p class="eyebrow">Release ledger</p>
-            <h2>Measured artifacts</h2>
+            <h2>Measured binaries</h2>
           </div>
           <span id="tableCount" class="panel__context">—</span>
         </header>
@@ -157,12 +232,11 @@
             <thead>
               <tr>
                 <th scope="col">Release</th>
-                <th scope="col">Archive</th>
-                <th scope="col">Change</th>
                 <th scope="col">Executables</th>
+                <th scope="col">Change</th>
                 <th scope="col" id="toolColumnHeader">Selected tool</th>
-                <th scope="col">Count</th>
-                <th scope="col">Artifact</th>
+                <th scope="col">Binaries</th>
+                <th scope="col">Largest binary</th>
               </tr>
             </thead>
             <tbody id="releaseTable"></tbody>
@@ -173,7 +247,7 @@
   </main>
 
   <footer class="footer">
-    <p>Latest stable patch per Go minor line. Sizes are binary bytes from official release archives.</p>
+    <p>Latest stable patch per Go minor line. Footprint = uncompressed executables in go/bin + go/pkg/tool.</p>
     <a href="https://go.dev/dl/">go.dev/dl</a>
   </footer>
 </body>
