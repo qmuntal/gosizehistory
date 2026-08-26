@@ -1,4 +1,6 @@
-const DATA_URL = "./data/go-tool-sizes.json?v=20260826-no-bridge";
+const DATA_FILENAME = "go-tool-sizes.json";
+const DATA_VERSION = "20260826-root-report";
+const DATA_URL = `${location.pathname.includes("/dashboard/") ? "../" : "./"}${DATA_FILENAME}?v=${DATA_VERSION}`;
 const MEBIBYTE = 1024 * 1024;
 
 const COLOR_SCHEMES = {
@@ -69,6 +71,7 @@ const elements = {
   releaseSelect: document.querySelector("#releaseSelect"),
   toolSelect: document.querySelector("#toolSelect"),
   downloadCsv: document.querySelector("#downloadCsv"),
+  downloadJson: document.querySelector("#downloadJson"),
   tipNotice: document.querySelector("#tipNotice"),
   tipVersion: document.querySelector("#tipVersion"),
   tipRevision: document.querySelector("#tipRevision"),
@@ -167,6 +170,7 @@ async function initialize() {
     }
     state.report = await response.json();
     validateReport(state.report);
+    elements.downloadJson.href = DATA_URL.split("?")[0];
     state.tipRelease = state.report.releases.find((release) => release.development) || null;
     state.releases = [...state.report.releases].sort(compareReleases);
 
@@ -1414,9 +1418,10 @@ function updateDatasetMeta() {
   const first = state.releases[0].version;
   const latest = state.releases.at(-1).version;
   const stableCount = state.releases.filter((release) => !release.development).length;
+  const measurementCount = sum(state.releases.flatMap((release) => release.platforms).map((platform) => platform.tools.length));
   elements.datasetRange.textContent = state.tipRelease
-    ? `${first} → ${latest} · ${stableCount} releases + tip`
-    : `${first} → ${latest} · ${stableCount} releases`;
+    ? `${first} → ${latest} · ${stableCount} stable + tip · ${new Intl.NumberFormat("en").format(measurementCount)} binaries`
+    : `${first} → ${latest} · ${stableCount} releases · ${new Intl.NumberFormat("en").format(measurementCount)} binaries`;
   const generated = new Date(state.report.generated_at);
   elements.generatedAt.dateTime = state.report.generated_at;
   elements.generatedAt.textContent = `Generated ${new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(generated)} UTC`;

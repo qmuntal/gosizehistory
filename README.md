@@ -119,7 +119,7 @@ Each API archive remains a separate platform record. This matters for historical
 
 ## Dashboard
 
-The static dashboard lives in `dashboard/` and reads the single versioned snapshot at `dashboard/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Trend views switch between absolute size, a first-release index, and change from the prior release. A platform-by-release heatmap makes coverage gaps and historical size changes explicit.
+The static dashboard lives in `dashboard/` and reads the committed `go-tool-sizes.json` at the repository root. That report is the sole source for releases, platforms, binaries, sizes, tip metadata, and derived dashboard statistics. The dashboard charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Trend views switch between absolute size, a first-release index, and change from the prior release. A platform-by-release heatmap makes coverage gaps and historical size changes explicit.
 
 The comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release. It includes per-binary additions, removals, diverging size changes, and a ranked change table. The top Platform and Release filters define selected side A; the comparison panel selects side B.
 
@@ -132,28 +132,28 @@ The header uses the unmodified Go gopher by Renée French, licensed under [CC BY
 Preview it locally from the repository root:
 
 ```console
-python -m http.server 4173 --directory dashboard
+python -m http.server 4173
 ```
 
-Then open <http://localhost:4173/>.
+Then open <http://localhost:4173/dashboard/>. The source preview and the deployed site both read the same committed root report.
 
 Refresh the published dataset after collecting new releases:
 
 ```console
-go run . -latest-per-minor -workers 4 -output dashboard/data/go-tool-sizes.json
+go run . -latest-per-minor -workers 4 -output go-tool-sizes.json
 ```
 
 Refresh the development snapshot independently:
 
 ```console
-go run . -tip -tip-workers 2 -output dashboard/data/go-tool-sizes.json
+go run . -tip -tip-workers 2 -output go-tool-sizes.json
 ```
 
-Regenerating stable releases preserves an existing embedded tip entry. The archive and source-build caches share the `.cache/gosizehistory` root but use separate subdirectories.
+Regenerating stable releases preserves an existing embedded tip entry. After either refresh, review and commit `go-tool-sizes.json`; there is no second dashboard report copy. The archive and source-build caches share the `.cache/gosizehistory` root but use separate subdirectories.
 
 ## GitHub Pages
 
-The workflow at `.github/workflows/pages.yml` deploys `dashboard/` whenever `main` is pushed, and it can also be started manually.
+The workflow at `.github/workflows/pages.yml` validates the committed root report, stages it with `dashboard/`, and deploys that artifact whenever `main` is pushed. It can also be started manually.
 
 1. Push the repository to GitHub with `main` as its default branch.
 2. Open **Settings → Pages** in the GitHub repository.

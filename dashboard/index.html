@@ -18,10 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20260826-no-bridge">
+  <link rel="stylesheet" href="./styles.css?v=20260826-root-report">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
-  <script defer src="./app.js?v=20260826-no-bridge"></script>
+  <script defer src="./app.js?v=20260826-root-report"></script>
 </head>
 <body>
   <a class="skip-link" href="#dashboard">Skip to dashboard</a>
@@ -68,7 +68,7 @@
           <i data-lucide="download" aria-hidden="true"></i>
           CSV
         </button>
-        <a class="button button--secondary" href="./data/go-tool-sizes.json" download>
+        <a id="downloadJson" class="button button--secondary" href="./go-tool-sizes.json" download="go-tool-sizes.json">
           <i data-lucide="file-json-2" aria-hidden="true"></i>
           JSON
         </a>
@@ -86,7 +86,7 @@
 
     <div id="status" class="status" role="status">
       <span class="status__spinner" aria-hidden="true"></span>
-      Loading 8,000+ binary measurements
+      Loading committed measurements
     </div>
 
     <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
