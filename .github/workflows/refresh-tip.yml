@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: refresh-go-tip
+  group: update-go-size-report
   cancel-in-progress: false
 
 jobs:

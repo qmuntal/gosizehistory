@@ -70,6 +70,8 @@ The target matrix comes from `go tool dist list -json`. Android, iOS, JavaScript
 
 The `Refresh Go tip measurements` workflow runs daily at 04:17 UTC. It compares the committed revision with upstream `golang/go` HEAD, rebuilds all standalone platforms only when that revision changes, validates the merged report, and commits `go-tool-sizes.json` to `main`. A manual run can force a rebuild. Successful refresh runs hand off to the Pages workflow so bot-authored updates are deployed.
 
+The `Refresh stable Go releases` workflow runs nightly at 01:17 UTC. It asks the Go downloads API for the latest stable patch in every minor line, downloads and measures only versions not already present, replaces superseded patches in those minor lines, and preserves all untouched stable data plus tip. The stable and tip refresh jobs share a concurrency group so only one can update the report at a time.
+
 An interrupted workflow that already produced a standalone tip report can merge it without rebuilding:
 
 ```console
@@ -125,6 +127,8 @@ The static dashboard lives in `dashboard/` and reads the committed `go-tool-size
 
 The comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release. It includes per-binary additions, removals, diverging size changes, and a ranked change table. The top Platform and Release filters define selected side A; the comparison panel selects side B.
 
+Platform, release, binary, chart modes, and comparison selections are encoded in the URL. Shared or bookmarked links reopen the same analytical view; the link button beside the exports copies the current view. Without an explicit platform parameter, the dashboard selects the client operating system and uses the detected architecture when the browser exposes it.
+
 Release comparisons report chronological footprint size change, independent of which selector contains the newer release: negative means the later release is smaller, while positive means it grew. Platform comparisons remain a direct B-vs-A delta.
 
 The dashboard follows the operating-system light or dark preference on first load and persists changes made with the header theme toggle.
@@ -143,6 +147,12 @@ Refresh the published dataset after collecting new releases:
 
 ```console
 go run . -latest-per-minor -workers 4 -output go-tool-sizes.json
+```
+
+After the initial collection, refresh only newly selected latest stable patch releases:
+
+```console
+go run . -refresh-stable -workers 4 -output go-tool-sizes.json
 ```
 
 Refresh the development snapshot independently:

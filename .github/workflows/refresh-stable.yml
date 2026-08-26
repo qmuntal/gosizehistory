@@ -1,0 +1,121 @@
+name: Refresh stable Go releases
+
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-go-size-report
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Read current report metadata
+        id: before
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE' >> "$GITHUB_OUTPUT"
+          const report = require("./go-tool-sizes.json");
+          const tip = report.releases.find((release) => release.development);
+          const stable = report.releases.filter((release) => release.stable);
+          console.log(`tip_revision=${tip?.revision || ""}`);
+          console.log(`stable_count=${stable.length}`);
+          NODE
+
+      - name: Check for new stable releases
+        id: refresh
+        shell: bash
+        run: |
+          set -euo pipefail
+          go run . \
+            -refresh-stable \
+            -workers 4 \
+            -output go-tool-sizes.json
+
+          changed=false
+          if ! git diff --quiet -- go-tool-sizes.json; then
+            changed=true
+          fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          if [[ "$changed" == "false" ]]; then
+            echo "No new stable Go releases were found." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Validate refreshed report
+        env:
+          EXPECTED_TIP_REVISION: ${{ steps.before.outputs.tip_revision }}
+          MINIMUM_STABLE_COUNT: ${{ steps.before.outputs.stable_count }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const report = require("./go-tool-sizes.json");
+          const stable = report.releases.filter((release) => release.stable);
+          const development = report.releases.filter((release) => release.development);
+          if (report.schema_version !== 1 || development.length !== 1) {
+            throw new Error("expected schema version 1 with exactly one development release");
+          }
+          if (development[0].revision !== process.env.EXPECTED_TIP_REVISION) {
+            throw new Error("stable refresh changed the development revision");
+          }
+          if (stable.length < Number(process.env.MINIMUM_STABLE_COUNT)) {
+            throw new Error("stable refresh removed a minor release line");
+          }
+          const minors = stable.map((release) => release.version.match(/^go\d+\.\d+/)?.[0]);
+          if (minors.some((minor) => !minor) || new Set(minors).size !== stable.length) {
+            throw new Error("stable report contains duplicate or invalid minor lines");
+          }
+          for (const release of stable) {
+            if (!Array.isArray(release.platforms) || release.platforms.length === 0) {
+              throw new Error(`${release.version} contains no platforms`);
+            }
+            for (const platform of release.platforms) {
+              if (!Array.isArray(platform.tools) || platform.tools.length === 0) {
+                throw new Error(`${release.version} ${platform.os}/${platform.arch} contains no binaries`);
+              }
+            }
+          }
+          console.log(`Validated ${stable.length} latest stable minor lines; tip ${development[0].revision.slice(0, 12)} preserved`);
+          NODE
+
+          if ! git diff --quiet -- . ':(exclude)go-tool-sizes.json'; then
+            echo "Unexpected tracked changes:" >&2
+            git status --short >&2
+            exit 1
+          fi
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Commit refreshed report
+        if: steps.refresh.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add go-tool-sizes.json
+          git commit -m "Update stable Go releases"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+          echo "Updated the latest stable Go release measurements." >> "$GITHUB_STEP_SUMMARY"

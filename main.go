@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	goversion "go/version"
 	"io"
 	"log"
 	"net/http"
@@ -27,6 +28,7 @@ type options struct {
 	goos            string
 	goarch          string
 	latestPerMinor  bool
+	refreshStable   bool
 	tip             bool
 	tipRepository   string
 	tipRef          string
@@ -62,6 +64,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	flags.StringVar(&opts.goos, "os", "", "exact GOOS to include, such as linux")
 	flags.StringVar(&opts.goarch, "arch", "", "release architecture to include, such as amd64 or arm")
 	flags.BoolVar(&opts.latestPerMinor, "latest-per-minor", false, "include only the latest stable patch of each Go minor version")
+	flags.BoolVar(&opts.refreshStable, "refresh-stable", false, "merge only new latest stable patch releases into the existing output report")
 	flags.BoolVar(&opts.tip, "tip", false, "build a report from golang/go tip instead of release archives")
 	flags.StringVar(&opts.tipRepository, "tip-repository", tipbuild.DefaultRepository, "Git repository used for tip builds")
 	flags.StringVar(&opts.tipRef, "tip-ref", "HEAD", "Git ref fetched for the tip build")
@@ -93,14 +96,23 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if opts.latestPerMinor && opts.version != "" {
 		return fmt.Errorf("latest-per-minor cannot be combined with version")
 	}
+	if opts.refreshStable && (opts.latestPerMinor || opts.version != "" || opts.goos != "" || opts.goarch != "") {
+		return fmt.Errorf("refresh-stable cannot be combined with latest-per-minor, version, os, or arch")
+	}
 	if (opts.tip || opts.mergeTipReport != "") && (opts.latestPerMinor || opts.version != "") {
 		return fmt.Errorf("tip cannot be combined with latest-per-minor or version")
+	}
+	if opts.refreshStable && (opts.tip || opts.mergeTipReport != "") {
+		return fmt.Errorf("refresh-stable cannot be combined with tip or merge-tip-report")
 	}
 	if (opts.tip || opts.mergeTipReport != "") && opts.dryRun {
 		return fmt.Errorf("dry-run is not supported with tip")
 	}
 	if opts.tip && opts.mergeTipReport != "" {
 		return fmt.Errorf("tip cannot be combined with merge-tip-report")
+	}
+	if opts.refreshStable && opts.output == "-" {
+		return fmt.Errorf("refresh-stable requires an output file")
 	}
 
 	logger := log.New(stderr, "", 0)
@@ -133,15 +145,31 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		return mergeAndWriteReport(opts.output, opts.tipBase, tipReport, stdout, logger)
 	}
 
+	var stableBase history.Report
+	if opts.refreshStable {
+		var err error
+		stableBase, err = history.ReadFile(opts.output)
+		if err != nil {
+			return fmt.Errorf("read stable base report %s: %w", opts.output, err)
+		}
+	}
+
 	client := newHTTPClient(opts.workers)
 	plan, err := history.NewPlan(ctx, client, opts.metadataSource, goreleases.Filter{
 		Version:        opts.version,
 		OS:             opts.goos,
 		Arch:           opts.goarch,
-		LatestPerMinor: opts.latestPerMinor,
+		LatestPerMinor: opts.latestPerMinor || opts.refreshStable,
 	})
 	if err != nil {
 		return err
+	}
+	if opts.refreshStable {
+		plan = newStablePlan(plan, stableBase)
+		if len(plan.Archives) == 0 {
+			logger.Print("no new stable releases")
+			return nil
+		}
 	}
 
 	knownSize, unknownSizes := plan.KnownDownloadSize()
@@ -171,6 +199,13 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
+	if opts.refreshStable {
+		report, err = history.MergeStable(stableBase, report)
+		if err != nil {
+			return err
+		}
+		return writeReport(opts.output, report, stdout, logger)
+	}
 
 	if opts.output != "-" {
 		if existing, readErr := history.ReadFile(opts.output); readErr == nil {
@@ -183,6 +218,27 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		}
 	}
 	return writeReport(opts.output, report, stdout, logger)
+}
+
+func newStablePlan(plan history.Plan, existing history.Report) history.Plan {
+	existingVersions := make(map[string]string)
+	for _, release := range existing.Releases {
+		if release.Stable {
+			minor := goversion.Lang(release.Version)
+			if current := existingVersions[minor]; current == "" || goversion.Compare(release.Version, current) > 0 {
+				existingVersions[minor] = release.Version
+			}
+		}
+	}
+	archives := make([]goreleases.Archive, 0, len(plan.Archives))
+	for _, archive := range plan.Archives {
+		current := existingVersions[goversion.Lang(archive.Release)]
+		if current == "" || goversion.Compare(archive.Release, current) > 0 {
+			archives = append(archives, archive)
+		}
+	}
+	plan.Archives = archives
+	return plan
 }
 
 func mergeAndWriteReport(output, basePath string, tipReport history.Report, stdout io.Writer, logger *log.Logger) error {

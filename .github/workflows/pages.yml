@@ -4,9 +4,8 @@ on:
   push:
     branches: [main]
   workflow_run:
-    workflows: [Refresh Go tip measurements]
+    workflows: [Refresh Go tip measurements, Refresh stable Go releases]
     types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:

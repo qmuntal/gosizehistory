@@ -39,6 +39,75 @@ func TestMergeDevelopmentReplacesPreviousTip(t *testing.T) {
 	}
 }
 
+func TestMergeStableReplacesOnlyUpdatedMinorLines(t *testing.T) {
+	stableTime := time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC)
+	updateTime := stableTime.Add(time.Hour)
+	base := Report{
+		SchemaVersion: SchemaVersion,
+		GeneratedAt:   stableTime,
+		Source:        "dl.json",
+		Releases: []Release{
+			{Version: "go1.27.0", Stable: true, Platforms: []Platform{{OS: "linux", Arch: "amd64"}}},
+			{Version: "go1.26.7", Stable: true, Platforms: []Platform{{OS: "windows", Arch: "amd64"}}},
+			{Version: "go1.28-tip", Development: true, Revision: "tip-revision"},
+		},
+	}
+	updates := Report{
+		SchemaVersion: SchemaVersion,
+		GeneratedAt:   updateTime,
+		Source:        "new-metadata.json",
+		Releases: []Release{
+			{Version: "go1.28.0", Stable: true},
+			{Version: "go1.27.1", Stable: true},
+		},
+	}
+
+	merged, err := MergeStable(base, updates)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantVersions := []string{"go1.28.0", "go1.27.1", "go1.26.7", "go1.28-tip"}
+	if len(merged.Releases) != len(wantVersions) {
+		t.Fatalf("got %d releases, want %d: %#v", len(merged.Releases), len(wantVersions), merged.Releases)
+	}
+	for index, want := range wantVersions {
+		if merged.Releases[index].Version != want {
+			t.Fatalf("release %d = %q, want %q", index, merged.Releases[index].Version, want)
+		}
+	}
+	if merged.Releases[2].Platforms[0].OS != "windows" {
+		t.Fatalf("untouched release data was not preserved: %#v", merged.Releases[2])
+	}
+	if merged.Releases[3].Revision != "tip-revision" || !merged.Releases[3].Development {
+		t.Fatalf("development release was not preserved: %#v", merged.Releases[3])
+	}
+	if merged.Source != base.Source || !merged.GeneratedAt.Equal(updateTime) {
+		t.Fatalf("unexpected merged metadata: %#v", merged)
+	}
+}
+
+func TestMergeStableRejectsDuplicateMinorUpdates(t *testing.T) {
+	base := Report{SchemaVersion: SchemaVersion, Releases: []Release{{Version: "go1.26.7", Stable: true}}}
+	updates := Report{
+		SchemaVersion: SchemaVersion,
+		Releases: []Release{
+			{Version: "go1.27.1", Stable: true},
+			{Version: "go1.27.2", Stable: true},
+		},
+	}
+	if _, err := MergeStable(base, updates); err == nil {
+		t.Fatal("MergeStable accepted duplicate minor updates")
+	}
+}
+
+func TestMergeStableRejectsDowngrade(t *testing.T) {
+	base := Report{SchemaVersion: SchemaVersion, Releases: []Release{{Version: "go1.27.2", Stable: true}}}
+	updates := Report{SchemaVersion: SchemaVersion, Releases: []Release{{Version: "go1.27.1", Stable: true}}}
+	if _, err := MergeStable(base, updates); err == nil {
+		t.Fatal("MergeStable accepted a stable release downgrade")
+	}
+}
+
 func TestReadFile(t *testing.T) {
 	filename := filepath.Join(t.TempDir(), "report.json")
 	report := Report{SchemaVersion: SchemaVersion, Releases: []Release{{
