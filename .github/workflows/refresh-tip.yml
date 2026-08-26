@@ -1,0 +1,137 @@
+name: Refresh Go tip measurements
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even when the upstream revision is unchanged
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-go-tip
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Check upstream revision
+        id: revision
+        env:
+          FORCE_REFRESH: ${{ inputs.force || 'false' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$(node -e "const report = require('./go-tool-sizes.json'); process.stdout.write(report.releases.find(release => release.development)?.revision || '')")"
+          remote="$(git ls-remote https://github.com/golang/go.git HEAD | awk 'NR == 1 { print $1 }')"
+          test -n "$remote"
+
+          refresh=false
+          if [[ "$FORCE_REFRESH" == "true" || "$current" != "$remote" ]]; then
+            refresh=true
+          fi
+
+          {
+            echo "current=$current"
+            echo "remote=$remote"
+            echo "refresh=$refresh"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Current report: ${current:-none}"
+          echo "Upstream tip:  $remote"
+          if [[ "$refresh" == "false" ]]; then
+            echo "Go tip has not changed; no rebuild is needed." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Build and measure Go tip
+        if: steps.revision.outputs.refresh == 'true'
+        env:
+          TIP_REVISION: ${{ steps.revision.outputs.remote }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          df -h .
+          go run . \
+            -tip \
+            -tip-ref "$TIP_REVISION" \
+            -tip-workers 2 \
+            -output go-tool-sizes.json
+          df -h .
+
+      - name: Validate refreshed report
+        if: steps.revision.outputs.refresh == 'true'
+        env:
+          EXPECTED_REVISION: ${{ steps.revision.outputs.remote }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const report = require("./go-tool-sizes.json");
+          const development = report.releases.filter((release) => release.development);
+          if (report.schema_version !== 1 || development.length !== 1) {
+            throw new Error("expected schema version 1 with exactly one development release");
+          }
+          const tip = development[0];
+          if (tip.revision !== process.env.EXPECTED_REVISION) {
+            throw new Error(`tip revision ${tip.revision} does not match ${process.env.EXPECTED_REVISION}`);
+          }
+          if (!Array.isArray(tip.platforms) || tip.platforms.length === 0) {
+            throw new Error("tip release contains no platforms");
+          }
+          for (const platform of tip.platforms) {
+            if (!Array.isArray(platform.tools) || platform.tools.length === 0) {
+              throw new Error(`${platform.os}/${platform.arch} contains no binaries`);
+            }
+          }
+          const binaries = tip.platforms.reduce((count, platform) => count + platform.tools.length, 0);
+          console.log(`Validated ${tip.version} ${tip.revision.slice(0, 12)}: ${tip.platforms.length} platforms, ${binaries} binaries`);
+          NODE
+
+          if ! git diff --quiet -- . ':(exclude)go-tool-sizes.json'; then
+            echo "Unexpected tracked changes:" >&2
+            git status --short >&2
+            exit 1
+          fi
+          test -z "$(git ls-files --others --exclude-standard)"
+
+      - name: Commit refreshed report
+        if: steps.revision.outputs.refresh == 'true'
+        env:
+          TIP_REVISION: ${{ steps.revision.outputs.remote }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- go-tool-sizes.json; then
+            echo "The regenerated report is unchanged." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add go-tool-sizes.json
+          git commit -m "Update Go tip measurements"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
+          echo "Updated Go tip measurements to \`${TIP_REVISION:0:12}\`." >> "$GITHUB_STEP_SUMMARY"

@@ -306,12 +306,15 @@ sendJobs:
 
 func buildTarget(ctx context.Context, goCommand, sourceDir, outputDir, gocache string, target Target) (history.Platform, error) {
 	targetDir := filepath.Join(outputDir, target.OS+"_"+target.Arch)
+	targetCache := filepath.Join(gocache, target.OS+"_"+target.Arch)
 	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		return history.Platform{}, fmt.Errorf("build tip %s/%s: %w", target.OS, target.Arch, err)
 	}
+	defer os.RemoveAll(targetDir)
+	defer os.RemoveAll(targetCache)
 	args := []string{"build", "-a", "-buildvcs=false", "-o", targetDir}
 	args = append(args, distributionPackages...)
-	if _, err := run(ctx, filepath.Join(sourceDir, "src"), targetEnvironment(sourceDir, gocache, target), goCommand, args...); err != nil {
+	if _, err := run(ctx, filepath.Join(sourceDir, "src"), targetEnvironment(sourceDir, targetCache, target), goCommand, args...); err != nil {
 		return history.Platform{}, fmt.Errorf("build tip %s/%s: %w", target.OS, target.Arch, err)
 	}
 	tools, err := Inventory(targetDir, target)

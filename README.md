@@ -68,6 +68,8 @@ This mode requires Git, a working bootstrap Go installation, and an existing sta
 
 The target matrix comes from `go tool dist list -json`. Android, iOS, JavaScript/Wasm, and WASI/Wasm are excluded because they are execution targets rather than standalone binary toolchain distributions; all other non-broken targets are built. Use `-os` and `-arch` for a focused build, `-tip-ref` to pin another Git ref, or `-bootstrap-goroot` to select the bootstrap toolchain. Use `-tip-base` when the base report differs from the output path.
 
+The `Refresh Go tip measurements` workflow runs daily at 04:17 UTC. It compares the committed revision with upstream `golang/go` HEAD, rebuilds all standalone platforms only when that revision changes, validates the merged report, and commits `go-tool-sizes.json` to `main`. A manual run can force a rebuild. Successful refresh runs hand off to the Pages workflow so bot-authored updates are deployed.
+
 An interrupted workflow that already produced a standalone tip report can merge it without rebuilding:
 
 ```console
