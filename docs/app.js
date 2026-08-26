@@ -1,4 +1,4 @@
-const DATA_URL = "./data/go-tool-sizes.json";
+const DATA_URL = "./data/go-tool-sizes.json?v=20260826-summary";
 const MEBIBYTE = 1024 * 1024;
 
 const COLOR_SCHEMES = {
