@@ -861,7 +861,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.27.0.linux-armv6l.tar.gz",
             "size": 68934532,
@@ -3636,7 +3636,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.26.7.linux-armv6l.tar.gz",
             "size": 65438215,
@@ -6404,7 +6404,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.25.14.linux-armv6l.tar.gz",
             "size": 58791755,
@@ -9868,7 +9868,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.24.13.linux-armv6l.tar.gz",
             "size": 76866345,
@@ -15114,7 +15114,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.23.12.linux-armv6l.tar.gz",
             "size": 71833952,
@@ -19663,7 +19663,7 @@
         },
         {
           "os": "freebsd",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.22.12.freebsd-arm.tar.gz",
             "size": 66984220,
@@ -20413,7 +20413,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.22.12.linux-armv6l.tar.gz",
             "size": 67379763,
@@ -22038,7 +22038,7 @@
         },
         {
           "os": "netbsd",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.22.12.netbsd-arm.tar.gz",
             "size": 66886276,
@@ -22538,7 +22538,7 @@
         },
         {
           "os": "openbsd",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.22.12.openbsd-arm.tar.gz",
             "size": 67038603,
@@ -23038,7 +23038,7 @@
         },
         {
           "os": "plan9",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.22.12.plan9-arm.tar.gz",
             "size": 65539328,
@@ -23663,7 +23663,7 @@
         },
         {
           "os": "windows",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.22.12.windows-arm.zip",
             "size": 74171115,
@@ -24669,7 +24669,7 @@
         },
         {
           "os": "freebsd",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.21.13.freebsd-arm.tar.gz",
             "size": 65081371,
@@ -25419,7 +25419,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.21.13.linux-armv6l.tar.gz",
             "size": 65438845,
@@ -27044,7 +27044,7 @@
         },
         {
           "os": "netbsd",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.21.13.netbsd-arm.tar.gz",
             "size": 65000728,
@@ -27544,7 +27544,7 @@
         },
         {
           "os": "openbsd",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.21.13.openbsd-arm.tar.gz",
             "size": 65147288,
@@ -27919,7 +27919,7 @@
         },
         {
           "os": "plan9",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.21.13.plan9-arm.tar.gz",
             "size": 63713019,
@@ -28544,7 +28544,7 @@
         },
         {
           "os": "windows",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.21.13.windows-arm.zip",
             "size": 72113441,
@@ -29592,7 +29592,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.20.14.linux-armv6l.tar.gz",
             "size": 98129899,
@@ -31277,7 +31277,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.19.13.linux-armv6l.tar.gz",
             "size": 116933873,
@@ -32926,7 +32926,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.18.10.linux-armv6l.tar.gz",
             "size": 110239169,
@@ -34575,7 +34575,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.17.13.linux-armv6l.tar.gz",
             "size": 103220130,
@@ -36224,7 +36224,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.16.15.linux-armv6l.tar.gz",
             "size": 100368887,
@@ -37629,7 +37629,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.15.15.linux-armv6l.tar.gz",
             "size": 97989611,
@@ -39046,7 +39046,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.14.15.linux-armv6l.tar.gz",
             "size": 102148192,
@@ -40451,7 +40451,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.13.15.linux-armv6l.tar.gz",
             "size": 98390014,
@@ -41892,7 +41892,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.12.17.linux-armv6l.tar.gz",
             "size": 105009681,
@@ -43399,7 +43399,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.11.13.linux-armv6l.tar.gz",
             "size": 101054265,
@@ -44930,7 +44930,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.10.8.linux-armv6l.tar.gz",
             "size": 75098269,
@@ -46389,7 +46389,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.9.7.linux-armv6l.tar.gz",
             "size": 103695818,
@@ -47776,7 +47776,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.8.7.linux-armv6l.tar.gz",
             "size": 87024578,
@@ -49068,7 +49068,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.7.6.linux-armv6l.tar.gz",
             "size": 72361302,
@@ -50390,7 +50390,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "archive": {
             "filename": "go1.6.4.linux-armv6l.tar.gz",
             "size": 72271383,
@@ -55662,7 +55662,7 @@
         },
         {
           "os": "linux",
-          "arch": "armv6l",
+          "arch": "arm",
           "tools": [
             {
               "name": "go",

@@ -26,6 +26,7 @@ func ReadFile(filename string) (Report, error) {
 	if len(report.Releases) == 0 {
 		return Report{}, fmt.Errorf("report has no releases")
 	}
+	normalizePlatforms(&report)
 	return report, nil
 }
 

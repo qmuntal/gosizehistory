@@ -60,7 +60,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	flags.StringVar(&opts.cacheDir, "cache-dir", ".cache/gosizehistory", "directory for downloaded archives")
 	flags.StringVar(&opts.version, "version", "", "exact Go version to include, such as go1.27.0")
 	flags.StringVar(&opts.goos, "os", "", "exact GOOS to include, such as linux")
-	flags.StringVar(&opts.goarch, "arch", "", "exact release architecture to include, such as amd64")
+	flags.StringVar(&opts.goarch, "arch", "", "release architecture to include, such as amd64 or arm")
 	flags.BoolVar(&opts.latestPerMinor, "latest-per-minor", false, "include only the latest stable patch of each Go minor version")
 	flags.BoolVar(&opts.tip, "tip", false, "build a report from golang/go tip instead of release archives")
 	flags.StringVar(&opts.tipRepository, "tip-repository", tipbuild.DefaultRepository, "Git repository used for tip builds")

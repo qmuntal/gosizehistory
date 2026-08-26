@@ -41,7 +41,14 @@ func TestMergeDevelopmentReplacesPreviousTip(t *testing.T) {
 
 func TestReadFile(t *testing.T) {
 	filename := filepath.Join(t.TempDir(), "report.json")
-	report := Report{SchemaVersion: SchemaVersion, Releases: []Release{{Version: "go1.27.0"}}}
+	report := Report{SchemaVersion: SchemaVersion, Releases: []Release{{
+		Version: "go1.27.0",
+		Platforms: []Platform{{
+			OS:      "linux",
+			Arch:    "armv6l",
+			Archive: &Archive{Filename: "go1.27.0.linux-armv6l.tar.gz"},
+		}},
+	}}}
 	file, err := os.Create(filename)
 	if err != nil {
 		t.Fatal(err)
@@ -59,6 +66,10 @@ func TestReadFile(t *testing.T) {
 	}
 	if got.SchemaVersion != SchemaVersion || len(got.Releases) != 1 || got.Releases[0].Version != "go1.27.0" {
 		t.Fatalf("unexpected report: %#v", got)
+	}
+	platform := got.Releases[0].Platforms[0]
+	if platform.Arch != "arm" || platform.Archive.Filename != "go1.27.0.linux-armv6l.tar.gz" {
+		t.Fatalf("unexpected normalized platform: %#v", platform)
 	}
 }
 

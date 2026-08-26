@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/qmuntal/gosizehistory/internal/platform"
 )
 
 const DefaultMetadataURL = "https://go.dev/dl/?mode=json&include=all"
@@ -88,7 +90,7 @@ func SelectArchives(releases []Release, filter Filter) []Archive {
 			if filter.OS != "" && file.OS != filter.OS {
 				continue
 			}
-			if filter.Arch != "" && file.Arch != filter.Arch {
+			if filter.Arch != "" && platform.CanonicalArch(file.Arch) != platform.CanonicalArch(filter.Arch) {
 				continue
 			}
 			archives = append(archives, Archive{Release: release.Version, Stable: release.Stable, File: file})

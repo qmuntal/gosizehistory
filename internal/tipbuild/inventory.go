@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/qmuntal/gosizehistory/internal/archiveinventory"
+	"github.com/qmuntal/gosizehistory/internal/platform"
 )
 
 var distributionPackages = []string{
@@ -38,7 +39,7 @@ func DistributionTargets(targets []Target, goos, goarch string) []Target {
 		if goos != "" && target.OS != goos {
 			continue
 		}
-		if goarch != "" && target.Arch != goarch {
+		if goarch != "" && platform.CanonicalArch(target.Arch) != platform.CanonicalArch(goarch) {
 			continue
 		}
 		selected = append(selected, target)

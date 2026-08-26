@@ -7,7 +7,7 @@ It inventories regular files directly under:
 - `go/bin` (`go`, `gofmt`, and their Windows `.exe` variants)
 - `go/pkg/tool/<target>` (`compile`, `link`, `vet`, and the other release-specific tools)
 
-The JSON keeps the path found in the archive, removes `.exe` only from the normalized tool name, and records all sizes in bytes. Source archives and installers are excluded. Stable, beta, and release-candidate versions are included.
+The JSON keeps the path found in the archive, removes `.exe` only from the normalized tool name, and records all sizes in bytes. Architecture names are canonicalized, so API metadata reported as `armv6l` is stored as `arm`; the original archive filename remains unchanged. Source archives and installers are excluded. Stable, beta, and release-candidate versions are included.
 
 ## Build and test
 
@@ -54,7 +54,7 @@ The metadata can also come from a saved API response such as the existing `dl.js
 go run . -metadata dl.json -dry-run
 ```
 
-Use `go run . -h` for all options. Set `-output -` to write JSON to stdout. The `-version`, `-os`, and `-arch` filters are exact matches and may be combined. `-latest-per-minor` may be combined with `-os` and `-arch`, but not with `-version`.
+Use `go run . -h` for all options. Set `-output -` to write JSON to stdout. The filters may be combined; `-version` and `-os` are exact matches, while `-arch arm`, `-arch armv6`, and `-arch armv6l` are aliases. `-latest-per-minor` may be combined with `-os` and `-arch`, but not with `-version`.
 
 ## Go tip
 

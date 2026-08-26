@@ -50,7 +50,6 @@ const ARCH_NAMES = {
   amd64: "AMD64",
   arm: "ARM",
   arm64: "ARM64",
-  armv6l: "ARMv6",
   loong64: "Loong64",
   mips: "MIPS",
   mips64: "MIPS64",
@@ -1415,12 +1414,17 @@ function toolForRow(row, name) {
 }
 
 function platformKey(platform) {
-  return `${platform.os}/${platform.arch}`;
+  return `${platform.os}/${canonicalArch(platform.arch)}`;
 }
 
 function platformLabel(key) {
   const [os, arch] = key.split("/");
-  return `${OS_NAMES[os] || os} / ${ARCH_NAMES[arch] || arch}`;
+  const canonical = canonicalArch(arch);
+  return `${OS_NAMES[os] || os} / ${ARCH_NAMES[canonical] || canonical}`;
+}
+
+function canonicalArch(arch) {
+  return arch === "armv6" || arch === "armv6l" ? "arm" : arch;
 }
 
 function compareReleases(left, right) {

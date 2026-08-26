@@ -10,6 +10,7 @@ import (
 func TestDistributionTargets(t *testing.T) {
 	targets := []Target{
 		{OS: "windows", Arch: "amd64"},
+		{OS: "linux", Arch: "arm"},
 		{OS: "linux", Arch: "arm64"},
 		{OS: "android", Arch: "arm64"},
 		{OS: "ios", Arch: "arm64"},
@@ -22,6 +23,7 @@ func TestDistributionTargets(t *testing.T) {
 	selected := DistributionTargets(targets, "", "")
 	want := []Target{
 		{OS: "linux", Arch: "amd64"},
+		{OS: "linux", Arch: "arm"},
 		{OS: "linux", Arch: "arm64"},
 		{OS: "windows", Arch: "amd64"},
 	}
@@ -32,6 +34,12 @@ func TestDistributionTargets(t *testing.T) {
 	filtered := DistributionTargets(targets, "linux", "arm64")
 	if len(filtered) != 1 || filtered[0].OS != "linux" || filtered[0].Arch != "arm64" {
 		t.Fatalf("unexpected filtered targets: %#v", filtered)
+	}
+	for _, arch := range []string{"arm", "armv6", "armv6l"} {
+		filtered = DistributionTargets(targets, "linux", arch)
+		if len(filtered) != 1 || filtered[0].Arch != "arm" {
+			t.Errorf("arch %q selected unexpected targets: %#v", arch, filtered)
+		}
 	}
 }
 

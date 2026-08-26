@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/qmuntal/gosizehistory/internal/history"
+	"github.com/qmuntal/gosizehistory/internal/platform"
 )
 
 const DefaultRepository = "https://github.com/golang/go.git"
@@ -344,10 +345,7 @@ func setEnvironment(environment []string, key, value string) []string {
 }
 
 func reportArch(target Target) string {
-	if target.OS == "linux" && target.Arch == "arm" {
-		return "armv6l"
-	}
-	return target.Arch
+	return platform.CanonicalArch(target.Arch)
 }
 
 func goEnvironment(goroot, goos, goarch, gocache string) []string {

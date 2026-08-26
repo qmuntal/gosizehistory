@@ -11,6 +11,7 @@ import (
 	"github.com/qmuntal/gosizehistory/internal/archivecache"
 	"github.com/qmuntal/gosizehistory/internal/archiveinventory"
 	"github.com/qmuntal/gosizehistory/internal/goreleases"
+	"github.com/qmuntal/gosizehistory/internal/platform"
 )
 
 const (
@@ -166,7 +167,7 @@ func Build(ctx context.Context, plan Plan, config BuildConfig) (Report, error) {
 					}
 					platforms[index] = Platform{
 						OS:   selected.File.OS,
-						Arch: selected.File.Arch,
+						Arch: platform.CanonicalArch(selected.File.Arch),
 						Archive: &Archive{
 							Filename: selected.File.Filename,
 							Size:     cachedArchive.Size,
@@ -235,4 +236,13 @@ func groupReleases(archives []goreleases.Archive, platforms []Platform) []Releas
 		releases[position].Platforms = append(releases[position].Platforms, platforms[index])
 	}
 	return releases
+}
+
+func normalizePlatforms(report *Report) {
+	for releaseIndex := range report.Releases {
+		for platformIndex := range report.Releases[releaseIndex].Platforms {
+			current := &report.Releases[releaseIndex].Platforms[platformIndex]
+			current.Arch = platform.CanonicalArch(current.Arch)
+		}
+	}
 }

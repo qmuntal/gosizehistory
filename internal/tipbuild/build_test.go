@@ -51,11 +51,14 @@ func TestCleanEnvironment(t *testing.T) {
 }
 
 func TestReportArch(t *testing.T) {
-	if got := reportArch(Target{OS: "linux", Arch: "arm"}); got != "armv6l" {
-		t.Fatalf("linux/arm report arch = %q, want armv6l", got)
+	if got := reportArch(Target{OS: "linux", Arch: "arm"}); got != "arm" {
+		t.Fatalf("linux/arm report arch = %q, want arm", got)
 	}
 	if got := reportArch(Target{OS: "freebsd", Arch: "arm"}); got != "arm" {
 		t.Fatalf("freebsd/arm report arch = %q, want arm", got)
+	}
+	if got := reportArch(Target{OS: "linux", Arch: "armv6l"}); got != "arm" {
+		t.Fatalf("linux/armv6l report arch = %q, want arm", got)
 	}
 }
 

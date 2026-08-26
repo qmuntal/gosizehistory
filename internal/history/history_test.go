@@ -23,19 +23,19 @@ import (
 )
 
 func TestBuildFromHTTPAndWriteFile(t *testing.T) {
-	tarGz := testTarGz(t, "go/bin/go", 7, "go/pkg/tool/linux_amd64/compile", 11)
+	tarGz := testTarGz(t, "go/bin/go", 7, "go/pkg/tool/linux_arm/compile", 11)
 	zipArchive := testZip(t, "go/bin/go.exe", 13, "go/pkg/tool/windows_amd64/compile.exe", 17)
 	tarDigest := sha256.Sum256(tarGz)
 	zipDigest := sha256.Sum256(zipArchive)
 
 	metadata := fmt.Sprintf(`[{"version":"go1.2.3","stable":true,"files":[
-		{"filename":"go1.2.3.linux-amd64.tar.gz","os":"linux","arch":"amd64","size":%d,"sha256":"%s","kind":"archive"},
+		{"filename":"go1.2.3.linux-armv6l.tar.gz","os":"linux","arch":"armv6l","size":%d,"sha256":"%s","kind":"archive"},
 		{"filename":"go1.2.3.windows-amd64.zip","os":"windows","arch":"amd64","size":%d,"sha256":"%s","kind":"archive"}
 	]}]`, len(tarGz), hex.EncodeToString(tarDigest[:]), len(zipArchive), hex.EncodeToString(zipDigest[:]))
 
 	archives := map[string][]byte{
-		"/dl/go1.2.3.linux-amd64.tar.gz": tarGz,
-		"/dl/go1.2.3.windows-amd64.zip":  zipArchive,
+		"/dl/go1.2.3.linux-armv6l.tar.gz": tarGz,
+		"/dl/go1.2.3.windows-amd64.zip":   zipArchive,
 	}
 	server := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		if request.URL.Path == "/metadata" {
@@ -87,6 +87,9 @@ func TestBuildFromHTTPAndWriteFile(t *testing.T) {
 		t.Fatalf("unexpected report shape: %#v", report.Releases)
 	}
 	linux := report.Releases[0].Platforms[0]
+	if linux.Arch != "arm" || linux.Archive.Filename != "go1.2.3.linux-armv6l.tar.gz" {
+		t.Fatalf("unexpected normalized Linux platform: %#v", linux)
+	}
 	if linux.Tools[0].Name != "go" || linux.Tools[0].Size != 7 || linux.Tools[1].Name != "compile" {
 		t.Fatalf("unexpected Linux tools: %#v", linux.Tools)
 	}

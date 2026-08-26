@@ -89,3 +89,26 @@ func TestSelectArchivesLatestPerMinor(t *testing.T) {
 		t.Fatalf("archive filenames mismatch: got %v, want %v", got, want)
 	}
 }
+
+func TestSelectArchivesTreatsARMAndARMv6LAsAliases(t *testing.T) {
+	releases := []Release{{
+		Version: "go1.27.0",
+		Stable:  true,
+		Files: []File{
+			{Filename: "go1.27.0.linux-armv6l.tar.gz", OS: "linux", Arch: "armv6l", Kind: "archive"},
+			{Filename: "go1.27.0.freebsd-arm.tar.gz", OS: "freebsd", Arch: "arm", Kind: "archive"},
+			{Filename: "go1.27.0.linux-arm64.tar.gz", OS: "linux", Arch: "arm64", Kind: "archive"},
+		},
+	}}
+	want := []string{"go1.27.0.linux-armv6l.tar.gz", "go1.27.0.freebsd-arm.tar.gz"}
+	for _, arch := range []string{"arm", "armv6", "armv6l"} {
+		archives := SelectArchives(releases, Filter{Arch: arch})
+		got := make([]string, len(archives))
+		for index := range archives {
+			got[index] = archives[index].File.Filename
+		}
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("arch %q selected %v, want %v", arch, got, want)
+		}
+	}
+}
