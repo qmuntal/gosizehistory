@@ -332,9 +332,10 @@ function updatePlatform(synchronize = true) {
   const selectedRelease = state.release;
   state.rows = state.releases.map((release) => makeRow(release, preferredPlatform(release, state.platform)));
   const availableRows = state.rows.filter((row) => row.platform);
+  const latestStable = [...availableRows].reverse().find((row) => releaseByVersion(row.version)?.stable);
   state.release = availableRows.some((row) => row.version === selectedRelease)
     ? selectedRelease
-    : availableRows.at(-1)?.version || "";
+    : latestStable?.version || availableRows.at(-1)?.version || "";
 
   populateReleaseSelect(availableRows);
   populateToolSelect(availableRows);
