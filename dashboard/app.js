@@ -1,5 +1,5 @@
 const DATA_FILENAME = "go-tool-sizes.json";
-const DATA_VERSION = "20260826-shared-views";
+const DATA_VERSION = "20260826-stable-default";
 const DATA_URL = `${location.pathname.includes("/dashboard/") ? "../" : "./"}${DATA_FILENAME}?v=${DATA_VERSION}`;
 const MEBIBYTE = 1024 * 1024;
 
