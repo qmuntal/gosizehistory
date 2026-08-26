@@ -18,10 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20260826-root-report">
+  <link rel="stylesheet" href="./styles.css?v=20260826-shared-views">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
-  <script defer src="./app.js?v=20260826-root-report"></script>
+  <script defer src="./app.js?v=20260826-shared-views"></script>
 </head>
 <body>
   <a class="skip-link" href="#dashboard">Skip to dashboard</a>
@@ -41,7 +41,10 @@
         <span id="datasetRange">Loading releases</span>
         <span class="meta-divider" aria-hidden="true"></span>
         <time id="generatedAt">Reading dataset</time>
-        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Use dark theme" aria-pressed="false" title="Use dark theme">
+        <a class="header-action" href="https://github.com/qmuntal/gosizehistory" target="_blank" rel="noreferrer" aria-label="View gosizehistory on GitHub" title="View gosizehistory on GitHub">
+          <i data-lucide="github" aria-hidden="true"></i>
+        </a>
+        <button id="themeToggle" class="header-action theme-toggle" type="button" aria-label="Use dark theme" aria-pressed="false" title="Use dark theme">
           <i class="theme-icon theme-icon--moon" data-lucide="moon" aria-hidden="true"></i>
           <i class="theme-icon theme-icon--sun" data-lucide="sun" aria-hidden="true"></i>
         </button>
@@ -63,7 +66,11 @@
         <label for="toolSelect">Binary</label>
         <select id="toolSelect" disabled></select>
       </div>
-      <div class="actions" aria-label="Data exports">
+      <div class="actions" aria-label="Dashboard actions">
+        <button id="copyLink" class="button button--secondary button--icon" type="button" aria-label="Copy view link" title="Copy view link" disabled>
+          <i data-lucide="link-2" aria-hidden="true"></i>
+        </button>
+        <span id="copyStatus" class="visually-hidden" aria-live="polite"></span>
         <button id="downloadCsv" class="button" type="button" disabled>
           <i data-lucide="download" aria-hidden="true"></i>
           CSV

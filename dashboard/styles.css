@@ -234,7 +234,7 @@ h2 {
   background: #50666c;
 }
 
-.theme-toggle {
+.header-action {
   width: 36px;
   height: 36px;
   display: grid;
@@ -246,15 +246,22 @@ h2 {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.theme-toggle:hover {
+.header-action:hover {
   background: rgba(255, 255, 255, 0.13);
 }
 
-.theme-toggle:focus-visible {
+.header-action:focus-visible {
   outline: 3px solid rgba(0, 173, 216, 0.42);
   outline-offset: 2px;
+}
+
+.header-action svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2;
 }
 
 .theme-icon {
@@ -404,10 +411,43 @@ html[data-theme="dark"] .theme-icon--moon {
   background: var(--subtle-hover);
 }
 
+.button.button--icon {
+  position: relative;
+  width: 42px;
+  flex: 0 0 42px;
+  padding: 0;
+}
+
+.button--icon[data-feedback]::after {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  padding: 4px 6px;
+  content: attr(data-feedback);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  box-shadow: var(--shadow);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
 .button svg {
   width: 16px;
   height: 16px;
   stroke-width: 2;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
 }
 
 .status {

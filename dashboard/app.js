@@ -1,5 +1,5 @@
 const DATA_FILENAME = "go-tool-sizes.json";
-const DATA_VERSION = "20260826-root-report";
+const DATA_VERSION = "20260826-shared-views";
 const DATA_URL = `${location.pathname.includes("/dashboard/") ? "../" : "./"}${DATA_FILENAME}?v=${DATA_VERSION}`;
 const MEBIBYTE = 1024 * 1024;
 
@@ -72,6 +72,8 @@ const elements = {
   toolSelect: document.querySelector("#toolSelect"),
   downloadCsv: document.querySelector("#downloadCsv"),
   downloadJson: document.querySelector("#downloadJson"),
+  copyLink: document.querySelector("#copyLink"),
+  copyStatus: document.querySelector("#copyStatus"),
   tipNotice: document.querySelector("#tipNotice"),
   tipVersion: document.querySelector("#tipVersion"),
   tipRevision: document.querySelector("#tipRevision"),
@@ -173,10 +175,13 @@ async function initialize() {
     elements.downloadJson.href = DATA_URL.split("?")[0];
     state.tipRelease = state.report.releases.find((release) => release.development) || null;
     state.releases = [...state.report.releases].sort(compareReleases);
+    await applyURLState();
 
     configureChartDefaults();
     populatePlatformSelect();
     bindControls();
+    updateModeButtons(elements.trendModeButtons, state.trendMode, "trendMode");
+    updateModeButtons(elements.heatmapModeButtons, state.heatmapMode, "heatmapMode");
 
     elements.status.hidden = true;
     elements.metricGrid.hidden = false;
@@ -184,14 +189,16 @@ async function initialize() {
     elements.visuals.getBoundingClientRect();
 
     updatePlatform();
-    configureComparison(true);
+    configureComparison(!state.comparison.right);
     updateDatasetMeta();
     updateTipNotice();
+    syncURLState();
 
     elements.platformSelect.disabled = false;
     elements.releaseSelect.disabled = false;
     elements.toolSelect.disabled = false;
     elements.downloadCsv.disabled = false;
+    elements.copyLink.disabled = false;
   } catch (error) {
     showError(error);
   }
@@ -221,6 +228,7 @@ function bindControls() {
   elements.platformSelect.addEventListener("change", () => {
     state.platform = elements.platformSelect.value;
     updatePlatform();
+    syncURLState();
   });
   elements.releaseSelect.addEventListener("change", () => {
     setRelease(elements.releaseSelect.value);
@@ -229,8 +237,10 @@ function bindControls() {
     state.tool = elements.toolSelect.value;
     updateToolChart();
     updateTable();
+    syncURLState();
   });
   elements.downloadCsv.addEventListener("click", downloadCsv);
+  elements.copyLink.addEventListener("click", copyViewLink);
   for (const button of elements.compareModeButtons) {
     button.addEventListener("click", () => {
       if (state.comparison.mode === button.dataset.compareMode) {
@@ -238,6 +248,7 @@ function bindControls() {
       }
       state.comparison.mode = button.dataset.compareMode;
       configureComparison(true);
+      syncURLState();
     });
   }
   for (const button of elements.trendModeButtons) {
@@ -249,6 +260,7 @@ function bindControls() {
   elements.compareRightSelect.addEventListener("change", () => {
     state.comparison.right = elements.compareRightSelect.value;
     renderComparison();
+    syncURLState();
   });
 }
 
@@ -286,18 +298,7 @@ function applyChartTheme() {
 }
 
 function populatePlatformSelect() {
-  const coverage = new Map();
-  for (const release of state.releases) {
-    const seen = new Set();
-    for (const platform of release.platforms) {
-      const key = platformKey(platform);
-      if (!seen.has(key)) {
-        coverage.set(key, (coverage.get(key) || 0) + 1);
-        seen.add(key);
-      }
-    }
-  }
-
+  const coverage = platformCoverage();
   const keys = [...coverage.keys()].sort(comparePlatformKeys);
   elements.platformSelect.replaceChildren(...keys.map((key) => {
     const option = document.createElement("option");
@@ -310,6 +311,21 @@ function populatePlatformSelect() {
     state.platform = keys[0];
   }
   elements.platformSelect.value = state.platform;
+}
+
+function platformCoverage() {
+  const coverage = new Map();
+  for (const release of state.releases) {
+    const seen = new Set();
+    for (const platform of release.platforms) {
+      const key = platformKey(platform);
+      if (!seen.has(key)) {
+        coverage.set(key, (coverage.get(key) || 0) + 1);
+        seen.add(key);
+      }
+    }
+  }
+  return coverage;
 }
 
 function updatePlatform(synchronize = true) {
@@ -453,6 +469,7 @@ function setTrendMode(mode) {
   updateModeButtons(elements.trendModeButtons, mode, "trendMode");
   updateFootprintChart();
   updateToolChart();
+  syncURLState();
 }
 
 function setHeatmapMode(mode) {
@@ -462,6 +479,7 @@ function setHeatmapMode(mode) {
   state.heatmapMode = mode;
   updateModeButtons(elements.heatmapModeButtons, mode, "heatmapMode");
   updateHeatmap();
+  syncURLState();
 }
 
 function updateModeButtons(buttons, mode, dataKey) {
@@ -764,7 +782,7 @@ function configureComparison(reset) {
     ? platformLabel(state.comparison.context)
     : state.comparison.context;
   elements.compareRightSelect.disabled = false;
-  populateComparisonSides(true);
+  populateComparisonSides(reset);
 }
 
 function populateComparisonSides(reset) {
@@ -1188,6 +1206,7 @@ function setRelease(version, synchronize = true) {
   if (synchronize) {
     synchronizeComparisonFromTop();
   }
+  syncURLState();
 }
 
 function commonChartOptions(tooltipCallbacks, onClick, stacked = false, axisKind = "bytes") {
@@ -1384,6 +1403,11 @@ function platformKey(platform) {
   return `${platform.os}/${canonicalArch(platform.arch)}`;
 }
 
+function canonicalPlatformKey(key) {
+  const [os, arch] = key.split("/");
+  return os && arch ? `${os}/${canonicalArch(arch)}` : key;
+}
+
 function platformLabel(key) {
   const [os, arch] = key.split("/");
   const canonical = canonicalArch(arch);
@@ -1475,6 +1499,51 @@ function downloadCsv() {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+async function copyViewLink() {
+  syncURLState();
+  try {
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("clipboard API unavailable");
+      }
+      await navigator.clipboard.writeText(location.href);
+    } catch {
+      copyTextFallback(location.href);
+    }
+    setCopyStatus("View link copied");
+  } catch {
+    setCopyStatus("Unable to copy view link");
+  }
+}
+
+function copyTextFallback(text) {
+  const input = document.createElement("textarea");
+  input.value = text;
+  input.setAttribute("readonly", "");
+  input.className = "visually-hidden";
+  document.body.append(input);
+  input.select();
+  const copied = document.execCommand("copy");
+  input.remove();
+  if (!copied) {
+    throw new Error("copy command failed");
+  }
+}
+
+function setCopyStatus(message) {
+  elements.copyStatus.textContent = message;
+  elements.copyLink.setAttribute("aria-label", message);
+  elements.copyLink.title = message;
+  elements.copyLink.dataset.feedback = message === "View link copied" ? "Copied" : "Copy failed";
+  clearTimeout(setCopyStatus.timeout);
+  setCopyStatus.timeout = setTimeout(() => {
+    elements.copyStatus.textContent = "";
+    delete elements.copyLink.dataset.feedback;
+    elements.copyLink.setAttribute("aria-label", "Copy view link");
+    elements.copyLink.title = "Copy view link";
+  }, 1800);
 }
 
 function csvValue(value) {
@@ -1680,4 +1749,138 @@ function selectHeatmapCell(platform, release) {
   state.release = release;
   elements.platformSelect.value = platform;
   updatePlatform();
+  syncURLState();
+}
+
+async function applyURLState() {
+  const params = new URLSearchParams(location.search);
+  const requestedPlatform = params.get("platform");
+  state.platform = requestedPlatform
+    ? canonicalPlatformKey(requestedPlatform)
+    : await defaultPlatformForClient();
+  state.release = params.get("release") || state.release;
+  state.tool = params.get("binary") || state.tool;
+
+  const trendMode = params.get("trend");
+  if (["absolute", "indexed", "delta"].includes(trendMode)) {
+    state.trendMode = trendMode;
+  }
+  const heatmapMode = params.get("heatmap");
+  if (["absolute", "delta"].includes(heatmapMode)) {
+    state.heatmapMode = heatmapMode;
+  }
+  const compareMode = params.get("compare");
+  if (["releases", "platforms"].includes(compareMode)) {
+    state.comparison.mode = compareMode;
+  }
+  state.comparison.right = params.get("against") || "";
+  if (state.comparison.mode === "platforms" && state.comparison.right) {
+    state.comparison.right = canonicalPlatformKey(state.comparison.right);
+  }
+}
+
+async function defaultPlatformForClient() {
+  const coverage = platformCoverage();
+  const keys = [...coverage.keys()];
+  const os = detectClientOS();
+  const arch = await detectClientArch();
+  const exact = os && arch ? `${os}/${arch}` : "";
+  if (coverage.has(exact)) {
+    return exact;
+  }
+
+  const candidates = keys.filter((key) => key.startsWith(`${os}/`));
+  if (candidates.length > 0) {
+    const preferredArches = [arch, "amd64", "arm64", "386", "arm"].filter(Boolean);
+    return candidates.sort((left, right) => {
+      const coverageDifference = coverage.get(right) - coverage.get(left);
+      if (coverageDifference !== 0) {
+        return coverageDifference;
+      }
+      const leftArch = left.split("/")[1];
+      const rightArch = right.split("/")[1];
+      const leftPreference = preferredArches.indexOf(leftArch);
+      const rightPreference = preferredArches.indexOf(rightArch);
+      return (leftPreference < 0 ? preferredArches.length : leftPreference)
+        - (rightPreference < 0 ? preferredArches.length : rightPreference)
+        || comparePlatformKeys(left, right);
+    })[0];
+  }
+
+  return coverage.has(state.platform) ? state.platform : keys.sort(comparePlatformKeys)[0] || "";
+}
+
+function detectClientOS() {
+  const platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent;
+  if (/win/i.test(platform)) {
+    return "windows";
+  }
+  if (/mac/i.test(platform)) {
+    return "darwin";
+  }
+  if (/linux|x11/i.test(platform)) {
+    return "linux";
+  }
+  if (/freebsd/i.test(platform)) {
+    return "freebsd";
+  }
+  if (/openbsd/i.test(platform)) {
+    return "openbsd";
+  }
+  if (/netbsd/i.test(platform)) {
+    return "netbsd";
+  }
+  return "";
+}
+
+async function detectClientArch() {
+  try {
+    const values = await navigator.userAgentData?.getHighEntropyValues?.(["architecture", "bitness"]);
+    if (values?.architecture === "arm" && values.bitness) {
+      return values.bitness === "64" ? "arm64" : values.bitness === "32" ? "arm" : "";
+    }
+    if (values?.architecture === "x86" && values.bitness) {
+      return values.bitness === "64" ? "amd64" : values.bitness === "32" ? "386" : "";
+    }
+  } catch {
+    // Fall back to the reduced user agent below.
+  }
+
+  const agent = `${navigator.platform || ""} ${navigator.userAgent || ""}`;
+  if (/arm64|aarch64/i.test(agent)) {
+    return "arm64";
+  }
+  if (/\barm(?:v[5-8])?l?\b/i.test(agent)) {
+    return "arm";
+  }
+  if (/x86_64|x64|win64|amd64/i.test(agent)) {
+    return "amd64";
+  }
+  if (/i[3-6]86|\bx86\b/i.test(agent)) {
+    return "386";
+  }
+  return "";
+}
+
+function syncURLState() {
+  if (!state.report) {
+    return;
+  }
+  const url = new URL(location.href);
+  setURLParameter(url, "platform", state.platform);
+  setURLParameter(url, "release", state.release);
+  setURLParameter(url, "binary", state.tool);
+  setURLParameter(url, "trend", state.trendMode);
+  setURLParameter(url, "heatmap", state.heatmapMode);
+  setURLParameter(url, "compare", state.comparison.mode);
+  setURLParameter(url, "against", state.comparison.right);
+  history.replaceState(null, "", url);
+}
+
+function setURLParameter(url, name, value) {
+  if (value) {
+    url.searchParams.set(name, value);
+  } else {
+    url.searchParams.delete(name);
+  }
 }
