@@ -121,7 +121,7 @@ Each API archive remains a separate platform record. This matters for historical
 
 The static dashboard lives in `docs/` and reads the single versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Trend views switch between absolute size, a first-release index, and change from the prior release. A platform-by-release heatmap makes coverage gaps and historical size changes explicit.
 
-The comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release. It includes per-binary additions, removals, diverging size changes, and a cumulative view of how the total changes. The top Platform and Release filters define selected side A; the comparison panel selects side B.
+The comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release. It includes per-binary additions, removals, diverging size changes, and a ranked change table. The top Platform and Release filters define selected side A; the comparison panel selects side B.
 
 Release comparisons report chronological footprint size change, independent of which selector contains the newer release: negative means the later release is smaller, while positive means it grew. Platform comparisons remain a direct B-vs-A delta.
 

@@ -1,4 +1,4 @@
-const DATA_URL = "./data/go-tool-sizes.json?v=20260826-tip-marker";
+const DATA_URL = "./data/go-tool-sizes.json?v=20260826-no-bridge";
 const MEBIBYTE = 1024 * 1024;
 
 const COLOR_SCHEMES = {
@@ -123,7 +123,6 @@ const elements = {
   compareTable: document.querySelector("#compareTable"),
   comparisonAxisNote: document.querySelector("#comparisonAxisNote"),
   comparisonInsight: document.querySelector("#comparisonInsight"),
-  waterfallDirection: document.querySelector("#waterfallDirection"),
   trendModeButtons: [...document.querySelectorAll("[data-trend-mode]")],
   heatmapModeButtons: [...document.querySelectorAll("[data-heatmap-mode]")],
   heatmap: document.querySelector("#heatmap"),
@@ -859,7 +858,6 @@ function renderComparison() {
   const analysis = comparisonAnalysis(left, right, tools, change);
   updateComparisonInsight(analysis);
   updateComparisonChart(analysis);
-  updateWaterfallChart(analysis);
   updateComparisonTable(analysis.contributions, change.earlierSide);
 }
 
@@ -1089,75 +1087,6 @@ function formatSignedAxisValue(value) {
 function formatSignedMiB(value) {
   const sign = value > 0 ? "+" : value < 0 ? "−" : "";
   return `${sign}${Math.abs(value).toFixed(1)} MiB`;
-}
-
-function updateWaterfallChart(analysis) {
-  elements.waterfallDirection.textContent = analysis.releaseMode
-    ? `${analysis.from.label} → ${analysis.to.label}`
-    : "A → B";
-  const visible = analysis.contributions.slice(0, 8);
-  const remaining = analysis.contributions.slice(8);
-  const changes = visible.map((tool) => ({ name: tool.name, delta: tool.rawDelta }));
-  if (remaining.length > 0) {
-    changes.push({ name: "Other", delta: sum(remaining.map((tool) => tool.rawDelta)) });
-  }
-
-  const labels = [analysis.from.label, ...changes.map((change) => change.name), analysis.to.label];
-  const values = [[0, analysis.from.total]];
-  const colors = [COLORS.gopher];
-  let running = analysis.from.total;
-  for (const change of changes) {
-    const next = running + change.delta;
-    values.push([running, next]);
-    colors.push(change.delta > 0 ? COLORS.amber : COLORS.teal);
-    running = next;
-  }
-  values.push([0, analysis.to.total]);
-  colors.push(COLORS.graphite);
-
-  destroyChart("waterfall");
-  state.charts.waterfall = new Chart(labeledChartCanvas(
-    "#waterfallChart",
-    `Cumulative size change from ${analysis.from.label} to ${analysis.to.label}`,
-  ), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Cumulative size change",
-        data: values,
-        backgroundColor: colors,
-        borderRadius: 2,
-        maxBarThickness: 32,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { maxRotation: 45, minRotation: 0, autoSkip: false },
-        },
-        y: byteAxisOptions(),
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              const index = context.dataIndex;
-              if (index === 0 || index === labels.length - 1) {
-                return `Total: ${formatBytes(context.raw[1])}`;
-              }
-              return `Change: ${formatSignedMiB((context.raw[1] - context.raw[0]) / MEBIBYTE)}`;
-            },
-          },
-        },
-      },
-      layout: { padding: { right: 8 } },
-    },
-  });
 }
 
 function updateComparisonTable(tools, earlierSide) {
