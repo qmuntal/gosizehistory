@@ -56,7 +56,7 @@
         <select id="platformSelect" disabled></select>
       </div>
       <div class="field">
-        <label for="releaseSelect">Snapshot</label>
+        <label for="releaseSelect">Release</label>
         <select id="releaseSelect" disabled></select>
       </div>
       <div class="field">
@@ -101,12 +101,12 @@
         <span id="stableSizeChangeContext">—</span>
       </article>
       <article class="metric metric--graphite">
-        <p>Largest stable jump</p>
+        <p>Largest stable change</p>
         <strong id="largestJump">—</strong>
         <span id="largestJumpContext">—</span>
       </article>
       <article class="metric metric--teal">
-        <p>Platform coverage</p>
+        <p>Release coverage</p>
         <strong id="releaseCoverage">—</strong>
         <span id="releaseCount">—</span>
       </article>
@@ -142,7 +142,7 @@
           </div>
           <span id="toolCoverage" class="panel__context">—</span>
         </header>
-        <p id="toolNote" class="panel__note">Gaps indicate the binary was not shipped.</p>
+        <p id="toolNote" class="panel__note">Gaps indicate an unavailable platform or binary.</p>
         <div class="chart-frame chart-frame--large">
           <canvas id="toolChart" role="img" aria-label="Selected tool size by Go release"></canvas>
         </div>
@@ -152,7 +152,7 @@
         <header class="panel__header compare-header">
           <div>
             <p class="eyebrow">Compare</p>
-            <h2>Toolchains side by side</h2>
+            <h2>Toolchain comparison</h2>
             <p id="compareScope" class="compare-scope">—</p>
           </div>
           <div class="segmented" role="group" aria-label="Comparison mode">
@@ -170,7 +170,7 @@
 
         <div class="compare-summary">
           <section class="compare-side compare-side--left" aria-labelledby="compareLeftName">
-            <p class="eyebrow">A</p>
+            <p class="eyebrow">A · selected</p>
             <h3 id="compareLeftName">—</h3>
             <strong id="compareLeftTotal">—</strong>
             <dl>
@@ -187,7 +187,7 @@
           </div>
 
           <section class="compare-side compare-side--right" aria-labelledby="compareRightName">
-            <p class="eyebrow">B</p>
+            <p class="eyebrow">B · comparison</p>
             <h3 id="compareRightName">—</h3>
             <strong id="compareRightTotal">—</strong>
             <dl>
@@ -201,7 +201,7 @@
         <div class="comparison-charts">
           <section class="comparison-chart">
             <header>
-              <h3>Binary contributions</h3>
+              <h3>Change by binary</h3>
               <span id="comparisonAxisNote">− smaller · + larger</span>
             </header>
             <div class="chart-frame chart-frame--compare">
@@ -210,8 +210,8 @@
           </section>
           <section class="comparison-chart">
             <header>
-              <h3>Footprint bridge</h3>
-              <span>How A becomes B</span>
+              <h3>Cumulative size change</h3>
+              <span id="waterfallDirection">—</span>
             </header>
             <div class="chart-frame chart-frame--waterfall">
               <canvas id="waterfallChart" role="img" aria-label="Waterfall of binary changes between selections"></canvas>
@@ -244,7 +244,7 @@
             <button class="segmented__button" type="button" data-heatmap-mode="delta" aria-pressed="false">Δ prior</button>
           </div>
         </header>
-        <p class="panel__note">Gray cells are unavailable. Select a cell to update Platform and Snapshot.</p>
+        <p id="heatmapNote" class="panel__note">Color intensity uses the 5th–95th percentile; hatched cells have no measurement.</p>
         <div id="heatmapLegend" class="heatmap-legend" aria-hidden="true"></div>
         <div id="heatmap" class="heatmap" role="grid" aria-label="Platform and release footprint heatmap"></div>
       </article>
@@ -279,7 +279,7 @@
         <header class="panel__header">
           <div>
             <p class="eyebrow">Release ledger</p>
-            <h2>Measured binaries</h2>
+            <h2>Release measurements</h2>
           </div>
           <span id="tableCount" class="panel__context">—</span>
         </header>
@@ -288,7 +288,7 @@
             <thead>
               <tr>
                 <th scope="col">Release</th>
-                <th scope="col">Executables</th>
+                <th scope="col">Total size</th>
                 <th scope="col">Size change</th>
                 <th scope="col" id="toolColumnHeader">Selected tool</th>
                 <th scope="col">Binaries</th>
@@ -303,7 +303,7 @@
   </main>
 
   <footer class="footer">
-    <p>Latest stable patch per Go minor line. Footprint = uncompressed executables in go/bin + go/pkg/tool.</p>
+    <p>Latest stable patch per Go minor line. Footprint = uncompressed executables in go/bin + go/pkg/tool. Stable data uses official archives; tip is built from its pinned revision with release flags.</p>
     <div class="footer__links">
       <a href="https://go.dev/dl/">go.dev/dl</a>
       <span>Go gopher by <a href="https://reneefrench.blogspot.com/">Renée French</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></span>

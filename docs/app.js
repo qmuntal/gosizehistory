@@ -121,9 +121,11 @@ const elements = {
   compareTableRight: document.querySelector("#compareTableRight"),
   compareTable: document.querySelector("#compareTable"),
   comparisonAxisNote: document.querySelector("#comparisonAxisNote"),
+  waterfallDirection: document.querySelector("#waterfallDirection"),
   trendModeButtons: [...document.querySelectorAll("[data-trend-mode]")],
   heatmapModeButtons: [...document.querySelectorAll("[data-heatmap-mode]")],
   heatmap: document.querySelector("#heatmap"),
+  heatmapNote: document.querySelector("#heatmapNote"),
   heatmapLegend: document.querySelector("#heatmapLegend"),
 };
 
@@ -426,7 +428,11 @@ function updateMetrics(rows) {
 function setSizeChangeMetric(valueElement, contextElement, percent, context) {
   valueElement.textContent = formatPercent(percent);
   valueElement.className = percent > 0 ? "delta-regression" : "delta-improvement";
-  contextElement.textContent = context;
+  contextElement.textContent = `${sizeChangeDirection(percent)} · ${context}`;
+}
+
+function sizeChangeDirection(percent) {
+  return percent < 0 ? "smaller" : percent > 0 ? "larger" : "unchanged";
 }
 
 function setUnavailableMetric(valueElement, contextElement, context) {
@@ -471,7 +477,10 @@ function updateFootprintChart() {
   elements.trendNote.textContent = trendNote(series, "Gaps indicate an unavailable platform.");
 
   destroyChart("footprint");
-  state.charts.footprint = new Chart(document.querySelector("#footprintChart"), {
+  state.charts.footprint = new Chart(labeledChartCanvas(
+    "#footprintChart",
+    `${mode.toolchainTitle} for ${platformLabel(state.platform)}`,
+  ), {
     type: "line",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
@@ -504,7 +513,10 @@ function updateCountChart() {
   options.plugins.legend.display = false;
 
   destroyChart("count");
-  state.charts.count = new Chart(document.querySelector("#countChart"), {
+  state.charts.count = new Chart(labeledChartCanvas(
+    "#countChart",
+    `Shipped binary count by release for ${platformLabel(state.platform)}`,
+  ), {
     type: "bar",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
@@ -523,11 +535,14 @@ function updateToolChart() {
   const mode = trendModeDefinition();
   elements.toolChartTitle.textContent = `${state.tool} · ${mode.binaryTitle}`;
   elements.toolCoverage.textContent = `${coverage}/${state.releases.length} releases · ${state.releases.length - coverage} gaps`;
-  elements.toolNote.textContent = trendNote(series, "Gaps indicate the binary was not shipped.");
+  elements.toolNote.textContent = trendNote(series, "Gaps indicate an unavailable platform or binary.");
   elements.toolColumnHeader.textContent = state.tool;
 
   destroyChart("tool");
-  state.charts.tool = new Chart(document.querySelector("#toolChart"), {
+  state.charts.tool = new Chart(labeledChartCanvas(
+    "#toolChart",
+    `${state.tool} ${mode.binaryTitle} for ${platformLabel(state.platform)}`,
+  ), {
     type: "line",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
@@ -576,7 +591,7 @@ function trendModeDefinition() {
       axisKind: "index",
       datasetLabel: "Relative footprint",
       toolchainTitle: "Relative footprint (first = 100)",
-      binaryTitle: "relative size",
+      binaryTitle: "relative size (first = 100)",
       fill: false,
     };
   case "delta":
@@ -584,15 +599,15 @@ function trendModeDefinition() {
       axisKind: "percent",
       datasetLabel: "Size change vs prior",
       toolchainTitle: "Size change vs prior release",
-      binaryTitle: "size change vs prior",
+      binaryTitle: "change vs prior release",
       fill: false,
     };
   default:
     return {
       axisKind: "bytes",
-      datasetLabel: "Total executables",
+      datasetLabel: "Executable footprint",
       toolchainTitle: "Executable footprint over time",
-      binaryTitle: "binary size",
+      binaryTitle: "size over time",
       fill: true,
     };
   }
@@ -632,7 +647,7 @@ function trendTooltipCallbacks(rows, valueForRow, label, includeRank = false) {
         if (includeRank) {
           const ranked = [...row.platform.tools].sort((left, right) => right.size - left.size);
           const rank = ranked.findIndex((tool) => tool.name === state.tool) + 1;
-          details.push(`Share: ${formatPercent((value / row.executablePayload) * 100)} · rank ${rank}/${ranked.length}`);
+          details.push(`Share: ${formatUnsignedPercent((value / row.executablePayload) * 100)} · rank ${rank}/${ranked.length}`);
         } else {
           details.push(`${pluralize(row.toolCount, "binary")} shipped`);
         }
@@ -671,8 +686,8 @@ function updateSnapshot() {
     return;
   }
 
-  elements.snapshotTitle.textContent = `${row.version} largest binaries`;
-  elements.snapshotTotal.textContent = formatBytes(row.executablePayload);
+  elements.snapshotTitle.textContent = `Largest binaries in ${row.version}`;
+  elements.snapshotTotal.textContent = `${formatBytes(row.executablePayload)} total`;
   updateSnapshotChart(row);
 }
 
@@ -680,7 +695,10 @@ function updateSnapshotChart(row) {
   const tools = [...row.platform.tools].sort((left, right) => right.size - left.size).slice(0, 8);
   const release = releaseByVersion(row.version);
   destroyChart("snapshot");
-  state.charts.snapshot = new Chart(document.querySelector("#snapshotChart"), {
+  state.charts.snapshot = new Chart(labeledChartCanvas(
+    "#snapshotChart",
+    `Largest binaries in ${row.version} for ${platformLabel(state.platform)}`,
+  ), {
     type: "bar",
     data: {
       labels: tools.map((tool) => tool.name),
@@ -872,8 +890,8 @@ function comparisonChange(left, right) {
       percent: earlier.total === 0 ? 0 : (bytes / earlier.total) * 100,
       regression: bytes > 0,
       earlierSide,
-      label: "Size change",
-      columnLabel: "Size change",
+      label: "Size change over time",
+      columnLabel: "Size change over time",
       description: `Footprint size change from ${earlier.label} to ${later.label}; negative means the later release is smaller`,
     };
   }
@@ -885,7 +903,7 @@ function comparisonChange(left, right) {
     regression: bytes > 0,
     earlierSide: null,
     label: "B vs A",
-    columnLabel: "Delta",
+    columnLabel: "B − A",
     description: "Total footprint difference from platform A to platform B",
   };
 }
@@ -959,12 +977,15 @@ function updateComparisonChart(analysis) {
     ? "− smaller · + larger"
     : "− B smaller · + B larger";
   destroyChart("comparison");
-  state.charts.comparison = new Chart(document.querySelector("#comparisonChart"), {
+  state.charts.comparison = new Chart(labeledChartCanvas(
+    "#comparisonChart",
+    `Size change by binary from ${analysis.from.label} to ${analysis.to.label}`,
+  ), {
     type: "bar",
     data: {
       labels: tools.map((tool) => tool.name),
       datasets: [{
-        label: analysis.releaseMode ? "Size change contribution" : "B − A",
+        label: analysis.releaseMode ? "Size change" : "B − A",
         data: tools.map((tool) => tool.contribution / MEBIBYTE),
         backgroundColor: tools.map((tool) => contributionColor(tool.contribution)),
         borderRadius: 2,
@@ -978,7 +999,7 @@ function updateComparisonChart(analysis) {
       interaction: { mode: "index", intersect: false },
       scales: {
         x: {
-          ...divergingAxisOptions(analysis.releaseMode ? "Size change contribution (MiB)" : "B − A (MiB)"),
+          ...divergingAxisOptions(analysis.releaseMode ? "Size change by binary (MiB)" : "B − A by binary (MiB)"),
         },
         y: { grid: { display: false } },
       },
@@ -1038,6 +1059,9 @@ function formatSignedMiB(value) {
 }
 
 function updateWaterfallChart(analysis) {
+  elements.waterfallDirection.textContent = analysis.releaseMode
+    ? `${analysis.from.label} → ${analysis.to.label}`
+    : "A → B";
   const visible = analysis.contributions.slice(0, 8);
   const remaining = analysis.contributions.slice(8);
   const changes = visible.map((tool) => ({ name: tool.name, delta: tool.rawDelta }));
@@ -1059,12 +1083,15 @@ function updateWaterfallChart(analysis) {
   colors.push(COLORS.graphite);
 
   destroyChart("waterfall");
-  state.charts.waterfall = new Chart(document.querySelector("#waterfallChart"), {
+  state.charts.waterfall = new Chart(labeledChartCanvas(
+    "#waterfallChart",
+    `Cumulative size change from ${analysis.from.label} to ${analysis.to.label}`,
+  ), {
     type: "bar",
     data: {
       labels,
       datasets: [{
-        label: "Footprint bridge",
+        label: "Cumulative size change",
         data: values,
         backgroundColor: colors,
         borderRadius: 2,
@@ -1345,6 +1372,12 @@ function destroyChart(name) {
   state.charts[name]?.destroy();
 }
 
+function labeledChartCanvas(selector, label) {
+  const canvas = document.querySelector(selector);
+  canvas.setAttribute("aria-label", label);
+  return canvas;
+}
+
 function preferredPlatform(release, key) {
   if (!release) {
     return null;
@@ -1527,6 +1560,15 @@ function compareAlphaNumeric(left, right) {
 }
 
 function updateHeatmap() {
+  elements.heatmapNote.textContent = state.heatmapMode === "absolute"
+    ? "Color intensity uses the 5th–95th percentile; hatched cells have no measurement."
+    : "Teal is smaller; amber is larger than prior. Intensity uses the 5th–95th percentile; hatching means no comparison.";
+  elements.heatmap.setAttribute(
+    "aria-label",
+    state.heatmapMode === "absolute"
+      ? "Executable footprint by platform and release"
+      : "Size change from prior release by platform",
+  );
   const platformKeys = [...new Set(state.releases.flatMap((release) => release.platforms.map(platformKey)))].sort(comparePlatformKeys);
   const matrix = platformKeys.map((key) => ({
     key,
