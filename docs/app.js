@@ -81,12 +81,13 @@ const elements = {
   trendChartTitle: document.querySelector("#trendChartTitle"),
   trendNote: document.querySelector("#trendNote"),
   toolNote: document.querySelector("#toolNote"),
-  tipSizeChange: document.querySelector("#tipSizeChange"),
-  tipSizeChangeContext: document.querySelector("#tipSizeChangeContext"),
-  stableSizeChange: document.querySelector("#stableSizeChange"),
-  stableSizeChangeContext: document.querySelector("#stableSizeChangeContext"),
-  largestJump: document.querySelector("#largestJump"),
-  largestJumpContext: document.querySelector("#largestJumpContext"),
+  currentFootprint: document.querySelector("#currentFootprint"),
+  currentFootprintContext: document.querySelector("#currentFootprintContext"),
+  recentSizeChangeLabel: document.querySelector("#recentSizeChangeLabel"),
+  recentSizeChange: document.querySelector("#recentSizeChange"),
+  recentSizeChangeContext: document.querySelector("#recentSizeChangeContext"),
+  historySizeChange: document.querySelector("#historySizeChange"),
+  historySizeChangeContext: document.querySelector("#historySizeChangeContext"),
   releaseCoverage: document.querySelector("#releaseCoverage"),
   releaseCount: document.querySelector("#releaseCount"),
   snapshotTitle: document.querySelector("#snapshotTitle"),
@@ -379,46 +380,41 @@ function updateMetrics(rows) {
   const stableRows = rows.filter((row) => releaseByVersion(row.version)?.stable);
   const tipRow = rows.find((row) => releaseByVersion(row.version)?.development);
   const latestStable = stableRows.at(-1);
-  const previousStable = stableRows.at(-2);
+  const current = rows.at(-1);
+  const first = rows[0];
+  const previous = rows.at(-2);
 
-  if (tipRow && latestStable) {
+  if (current) {
+    elements.currentFootprint.textContent = formatBytes(current.executablePayload);
+    elements.currentFootprint.className = "";
+    elements.currentFootprintContext.textContent = `${current.version} · ${pluralize(current.toolCount, "binary", "binaries")}`;
+  } else {
+    setUnavailableMetric(elements.currentFootprint, elements.currentFootprintContext, "No measurements");
+  }
+
+  const recentFrom = tipRow && latestStable ? latestStable : previous;
+  const recentTo = tipRow && latestStable ? tipRow : current;
+  elements.recentSizeChangeLabel.textContent = tipRow && latestStable ? "Tip vs latest stable" : "Latest measured change";
+  if (recentFrom && recentTo && recentFrom !== recentTo) {
     setSizeChangeMetric(
-      elements.tipSizeChange,
-      elements.tipSizeChangeContext,
-      sizeChangePercent(latestStable.executablePayload, tipRow.executablePayload),
-      `${latestStable.version} → ${tipRow.version}`,
+      elements.recentSizeChange,
+      elements.recentSizeChangeContext,
+      sizeChangePercent(recentFrom.executablePayload, recentTo.executablePayload),
+      `${recentFrom.version} → ${recentTo.version}`,
     );
   } else {
-    setUnavailableMetric(elements.tipSizeChange, elements.tipSizeChangeContext, "Tip unavailable");
+    setUnavailableMetric(elements.recentSizeChange, elements.recentSizeChangeContext, "Insufficient history");
   }
 
-  if (latestStable && previousStable) {
+  if (first && current && first !== current) {
     setSizeChangeMetric(
-      elements.stableSizeChange,
-      elements.stableSizeChangeContext,
-      sizeChangePercent(previousStable.executablePayload, latestStable.executablePayload),
-      `${previousStable.version} → ${latestStable.version}`,
+      elements.historySizeChange,
+      elements.historySizeChangeContext,
+      sizeChangePercent(first.executablePayload, current.executablePayload),
+      `${first.version} → ${current.version}`,
     );
   } else {
-    setUnavailableMetric(elements.stableSizeChange, elements.stableSizeChangeContext, "Insufficient history");
-  }
-
-  let largestChange = null;
-  for (let index = 1; index < stableRows.length; index += 1) {
-    const earlier = stableRows[index - 1];
-    const later = stableRows[index];
-    const percent = sizeChangePercent(earlier.executablePayload, later.executablePayload);
-    if (!largestChange || Math.abs(percent) > Math.abs(largestChange.percent)) {
-      largestChange = { earlier, later, percent };
-    }
-  }
-  if (largestChange) {
-    setSizeChangeMetric(
-      elements.largestJump,
-      elements.largestJumpContext,
-      largestChange.percent,
-      `${largestChange.earlier.version} → ${largestChange.later.version}`,
-    );
+    setUnavailableMetric(elements.historySizeChange, elements.historySizeChangeContext, "Insufficient history");
   }
   elements.releaseCoverage.textContent = `${rows.length} / ${state.releases.length}`;
   elements.releaseCount.textContent = `${formatUnsignedPercent((rows.length / state.releases.length) * 100)} measured`;
@@ -535,7 +531,7 @@ function updateToolChart() {
   elements.toolChartTitle.textContent = `${state.tool} · ${mode.binaryTitle}`;
   elements.toolCoverage.textContent = `${coverage}/${state.releases.length} releases · ${state.releases.length - coverage} gaps`;
   elements.toolNote.textContent = trendNote(series, "Gaps indicate an unavailable platform or binary.");
-  elements.toolColumnHeader.textContent = state.tool;
+  elements.toolColumnHeader.textContent = `${state.tool} size`;
 
   destroyChart("tool");
   state.charts.tool = new Chart(labeledChartCanvas(
@@ -648,7 +644,7 @@ function trendTooltipCallbacks(rows, valueForRow, label, includeRank = false) {
           const rank = ranked.findIndex((tool) => tool.name === state.tool) + 1;
           details.push(`Share: ${formatUnsignedPercent((value / row.executablePayload) * 100)} · rank ${rank}/${ranked.length}`);
         } else {
-          details.push(`${pluralize(row.toolCount, "binary")} shipped`);
+          details.push(`${pluralize(row.toolCount, "binary", "binaries")} shipped`);
         }
       }
       const release = releaseByVersion(row.version);
@@ -685,7 +681,7 @@ function updateSnapshot() {
     return;
   }
 
-  elements.snapshotTitle.textContent = `Largest binaries in ${row.version}`;
+  elements.snapshotTitle.textContent = `${Math.min(8, row.toolCount)} largest binaries in ${row.version}`;
   elements.snapshotTotal.textContent = `${formatBytes(row.executablePayload)} total`;
   updateSnapshotChart(row);
 }
@@ -1537,8 +1533,8 @@ function formatSignedBytes(bytes) {
   return `${bytes > 0 ? "+" : "−"}${formatBytes(Math.abs(bytes))}`;
 }
 
-function pluralize(count, noun) {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+function pluralize(count, noun, plural = `${noun}s`) {
+  return `${count} ${count === 1 ? noun : plural}`;
 }
 
 function sum(values) {

@@ -31,7 +31,7 @@
       <div class="brand">
         <img class="brand__logo" src="./assets/gopher.png" width="59" height="72" alt="">
         <div>
-          <p class="eyebrow">Binary archaeology</p>
+          <p class="eyebrow">Toolchain executable footprint</p>
           <h1>Go Size History</h1>
           <p class="brand__byline">by <a href="https://github.com/qmuntal">Quim Muntal</a></p>
         </div>
@@ -60,7 +60,7 @@
         <select id="releaseSelect" disabled></select>
       </div>
       <div class="field">
-        <label for="toolSelect">Tool</label>
+        <label for="toolSelect">Binary</label>
         <select id="toolSelect" disabled></select>
       </div>
       <div class="actions" aria-label="Data exports">
@@ -91,19 +91,19 @@
 
     <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
       <article class="metric metric--gopher">
-        <p>Tip vs latest stable</p>
-        <strong id="tipSizeChange">—</strong>
-        <span id="tipSizeChangeContext">—</span>
+        <p>Current footprint</p>
+        <strong id="currentFootprint">—</strong>
+        <span id="currentFootprintContext">—</span>
       </article>
       <article class="metric metric--amber">
-        <p>Latest stable change</p>
-        <strong id="stableSizeChange">—</strong>
-        <span id="stableSizeChangeContext">—</span>
+        <p id="recentSizeChangeLabel">Most recent change</p>
+        <strong id="recentSizeChange">—</strong>
+        <span id="recentSizeChangeContext">—</span>
       </article>
       <article class="metric metric--graphite">
-        <p>Largest stable change</p>
-        <strong id="largestJump">—</strong>
-        <span id="largestJumpContext">—</span>
+        <p>Change since first measurement</p>
+        <strong id="historySizeChange">—</strong>
+        <span id="historySizeChangeContext">—</span>
       </article>
       <article class="metric metric--teal">
         <p>Release coverage</p>
@@ -137,7 +137,7 @@
       <article class="panel panel--tool">
         <header class="panel__header">
           <div>
-            <p class="eyebrow">Single binary</p>
+            <p class="eyebrow">Selected binary</p>
             <h2 id="toolChartTitle">Tool evolution</h2>
           </div>
           <span id="toolCoverage" class="panel__context">—</span>
@@ -253,7 +253,7 @@
         <header class="panel__header">
           <div>
             <p class="eyebrow">Selected release</p>
-            <h2 id="snapshotTitle">Largest binaries</h2>
+            <h2 id="snapshotTitle">8 largest binaries</h2>
           </div>
           <span id="snapshotTotal" class="panel__context">—</span>
         </header>
