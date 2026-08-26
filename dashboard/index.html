@@ -18,10 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20260826-platform-distribution">
+  <link rel="stylesheet" href="./styles.css?v=20260826-analysis-navigation">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
-  <script defer src="./app.js?v=20260826-platform-distribution"></script>
+  <script defer src="./app.js?v=20260826-analysis-navigation"></script>
 </head>
 <body>
   <a class="skip-link" href="#dashboard">Skip to dashboard</a>
@@ -91,12 +91,19 @@
       <a id="tipSource" href="https://github.com/golang/go">View source</a>
     </aside>
 
+    <nav class="section-nav" aria-label="Dashboard sections">
+      <a href="#overview" aria-current="true">Overview</a>
+      <a href="#compare">Compare</a>
+      <a href="#platforms">Platforms</a>
+      <a href="#release-detail">Release</a>
+    </nav>
+
     <div id="status" class="status" role="status">
       <span class="status__spinner" aria-hidden="true"></span>
       Loading committed measurements
     </div>
 
-    <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
+    <section id="overview" class="metric-grid dashboard-section" aria-label="Selected platform summary" hidden>
       <article class="metric metric--gopher">
         <p>Current footprint</p>
         <strong id="currentFootprint">—</strong>
@@ -124,7 +131,7 @@
         <header class="panel__header">
           <div>
             <p class="eyebrow">Toolchain</p>
-            <h2 id="trendChartTitle">Executable footprint over time</h2>
+            <h2 id="trendChartTitle">Executable footprint by release</h2>
           </div>
           <div class="panel__tools">
             <span id="trendTarget" class="panel__context">—</span>
@@ -155,7 +162,7 @@
         </div>
       </article>
 
-      <article class="panel panel--compare">
+      <article id="compare" class="panel panel--compare dashboard-section">
         <header class="panel__header compare-header">
           <div>
             <p class="eyebrow">Compare</p>
@@ -173,6 +180,10 @@
             <label id="compareRightLabel" for="compareRightSelect">Compare with release</label>
             <select id="compareRightSelect" disabled></select>
           </div>
+          <button id="downloadComparisonCsv" class="button button--secondary" type="button" disabled>
+            <i data-lucide="download" aria-hidden="true"></i>
+            Comparison CSV
+          </button>
         </div>
 
         <div class="compare-summary">
@@ -233,34 +244,29 @@
         </div>
       </article>
 
-      <article class="panel panel--distribution">
+      <article id="platforms" class="panel panel--distribution dashboard-section">
         <header class="panel__header">
           <div>
             <p class="eyebrow">Cross-platform</p>
             <h2 id="distributionTitle">Platform footprint distribution</h2>
           </div>
-          <span id="distributionContext" class="panel__context">—</span>
+          <div class="panel__tools">
+            <span id="distributionContext" class="panel__context">—</span>
+            <div class="segmented segmented--compact segmented--three" role="group" aria-label="Distribution scope">
+              <button class="segmented__button" type="button" data-distribution-scope="all" aria-pressed="true">All</button>
+              <button class="segmented__button" type="button" data-distribution-scope="os" aria-pressed="false">Same OS</button>
+              <button class="segmented__button" type="button" data-distribution-scope="arch" aria-pressed="false">Same arch</button>
+            </div>
+          </div>
         </header>
-        <p id="distributionNote" class="panel__note">Each point is one platform; the selected platform is highlighted.</p>
+        <p id="distributionNote" class="panel__note" aria-live="polite">Each point is one platform; the selected platform is highlighted.</p>
         <div id="distributionFrame" class="chart-frame chart-frame--distribution">
-          <canvas id="distributionChart" role="img" aria-label="Executable footprint distribution across platforms"></canvas>
+          <canvas id="distributionChart" role="img" tabindex="0" aria-keyshortcuts="ArrowUp ArrowDown Home End" aria-label="Executable footprint distribution across platforms" aria-describedby="distributionSummary"></canvas>
         </div>
-        <div class="distribution-table-wrap">
-          <table class="distribution-table">
-            <thead>
-              <tr>
-                <th scope="col">Rank</th>
-                <th scope="col">Platform</th>
-                <th scope="col">Total size</th>
-                <th scope="col">Vs median</th>
-              </tr>
-            </thead>
-            <tbody id="distributionTable"></tbody>
-          </table>
-        </div>
+        <ol id="distributionSummary" class="visually-hidden"></ol>
       </article>
 
-      <article class="panel panel--snapshot">
+      <article id="release-detail" class="panel panel--snapshot dashboard-section">
         <header class="panel__header">
           <div>
             <p class="eyebrow">Selected release</p>

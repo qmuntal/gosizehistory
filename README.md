@@ -123,7 +123,7 @@ Each API archive remains a separate platform record. This matters for historical
 
 ## Dashboard
 
-The static dashboard lives in `dashboard/` and reads the committed `go-tool-sizes.json` at the repository root. That report is the sole source for releases, platforms, binaries, sizes, tip metadata, and derived dashboard statistics. The dashboard charts total executable footprint, binary count, largest binaries, individual binary evolution, and the ranked cross-platform footprint distribution for a selected release, plus CSV and JSON exports. Trend views switch between absolute size, a first-release index, and change from the prior release.
+The static dashboard lives in `dashboard/` and reads the committed `go-tool-sizes.json` at the repository root. That report is the sole source for releases, platforms, binaries, sizes, tip metadata, and derived dashboard statistics. The dashboard charts total executable footprint, binary count, largest binaries, individual binary evolution, and the scoped cross-platform footprint distribution for a selected release, plus history, comparison, and JSON exports. Trend views switch between absolute size, a first-release index, and change from the prior release. Releases are shown in sequence; their spacing does not represent elapsed time.
 
 The comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release. It includes per-binary additions, removals, diverging size changes, and a ranked change table. The top Platform and Release filters define selected side A; the comparison panel selects side B.
 

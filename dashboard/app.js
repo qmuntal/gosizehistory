@@ -1,5 +1,5 @@
 const DATA_FILENAME = "go-tool-sizes.json";
-const DATA_VERSION = "20260826-platform-distribution";
+const DATA_VERSION = "20260826-analysis-navigation";
 const DATA_URL = `${location.pathname.includes("/dashboard/") ? "../" : "./"}${DATA_FILENAME}?v=${DATA_VERSION}`;
 const MEBIBYTE = 1024 * 1024;
 
@@ -65,7 +65,7 @@ const ARCH_NAMES = {
 
 const elements = {
   status: document.querySelector("#status"),
-  metricGrid: document.querySelector("#metricGrid"),
+  metricGrid: document.querySelector("#overview"),
   visuals: document.querySelector("#visuals"),
   platformSelect: document.querySelector("#platformSelect"),
   releaseSelect: document.querySelector("#releaseSelect"),
@@ -74,6 +74,7 @@ const elements = {
   downloadJson: document.querySelector("#downloadJson"),
   copyLink: document.querySelector("#copyLink"),
   copyStatus: document.querySelector("#copyStatus"),
+  sectionNavLinks: [...document.querySelectorAll(".section-nav a")],
   tipNotice: document.querySelector("#tipNotice"),
   tipVersion: document.querySelector("#tipVersion"),
   tipRevision: document.querySelector("#tipRevision"),
@@ -102,7 +103,9 @@ const elements = {
   distributionContext: document.querySelector("#distributionContext"),
   distributionNote: document.querySelector("#distributionNote"),
   distributionFrame: document.querySelector("#distributionFrame"),
-  distributionTable: document.querySelector("#distributionTable"),
+  distributionChart: document.querySelector("#distributionChart"),
+  distributionSummary: document.querySelector("#distributionSummary"),
+  distributionScopeButtons: [...document.querySelectorAll("[data-distribution-scope]")],
   toolChartTitle: document.querySelector("#toolChartTitle"),
   toolCoverage: document.querySelector("#toolCoverage"),
   toolColumnHeader: document.querySelector("#toolColumnHeader"),
@@ -131,6 +134,7 @@ const elements = {
   compareTableLeft: document.querySelector("#compareTableLeft"),
   compareTableRight: document.querySelector("#compareTableRight"),
   compareTable: document.querySelector("#compareTable"),
+  downloadComparisonCsv: document.querySelector("#downloadComparisonCsv"),
   comparisonAxisNote: document.querySelector("#comparisonAxisNote"),
   comparisonInsight: document.querySelector("#comparisonInsight"),
   trendModeButtons: [...document.querySelectorAll("[data-trend-mode]")],
@@ -144,6 +148,7 @@ const state = {
   release: "",
   tool: "compile",
   trendMode: "absolute",
+  distributionScope: "all",
   rows: [],
   comparison: {
     mode: "releases",
@@ -181,6 +186,7 @@ async function initialize() {
     populatePlatformSelect();
     bindControls();
     updateModeButtons(elements.trendModeButtons, state.trendMode, "trendMode");
+    updateModeButtons(elements.distributionScopeButtons, state.distributionScope, "distributionScope");
 
     elements.status.hidden = true;
     elements.metricGrid.hidden = false;
@@ -191,6 +197,7 @@ async function initialize() {
     configureComparison(!state.comparison.right);
     updateDatasetMeta();
     updateTipNotice();
+    setupSectionNavigation();
     syncURLState();
 
     elements.platformSelect.disabled = false;
@@ -239,6 +246,7 @@ function bindControls() {
     syncURLState();
   });
   elements.downloadCsv.addEventListener("click", downloadCsv);
+  elements.downloadComparisonCsv.addEventListener("click", downloadComparisonCsv);
   elements.copyLink.addEventListener("click", copyViewLink);
   for (const button of elements.compareModeButtons) {
     button.addEventListener("click", () => {
@@ -253,6 +261,10 @@ function bindControls() {
   for (const button of elements.trendModeButtons) {
     button.addEventListener("click", () => setTrendMode(button.dataset.trendMode));
   }
+  for (const button of elements.distributionScopeButtons) {
+    button.addEventListener("click", () => setDistributionScope(button.dataset.distributionScope));
+  }
+  elements.distributionChart.addEventListener("keydown", selectPlatformFromDistributionKeyboard);
   elements.compareRightSelect.addEventListener("change", () => {
     state.comparison.right = elements.compareRightSelect.value;
     renderComparison();
@@ -611,21 +623,22 @@ function trendModeDefinition() {
     return {
       axisKind: "bytes",
       datasetLabel: "Executable footprint",
-      toolchainTitle: "Executable footprint over time",
-      binaryTitle: "size over time",
+      toolchainTitle: "Executable footprint by release",
+      binaryTitle: "size by release",
       fill: true,
     };
   }
 }
 
 function trendNote(series, missingText) {
+  const sequenceText = "Releases are evenly spaced by sequence, not date.";
   if (state.trendMode === "indexed" && series.baseline) {
-    return `${missingText} Baseline: ${series.baseline} = 100.`;
+    return `${missingText} ${sequenceText} Baseline: ${series.baseline} = 100.`;
   }
   if (state.trendMode === "delta") {
-    return `${missingText} Negative values mean the later release is smaller.`;
+    return `${missingText} ${sequenceText} Negative values mean the later release is smaller.`;
   }
-  return missingText;
+  return `${missingText} ${sequenceText}`;
 }
 
 function trendTooltipCallbacks(rows, valueForRow, label, includeRank = false) {
@@ -763,7 +776,18 @@ function updateDistributionChart() {
     return;
   }
 
-  const entries = uniquePlatformKeys(release).map((key) => {
+  const [selectedOS, selectedArch] = state.platform.split("/");
+  const platformKeys = uniquePlatformKeys(release).filter((key) => {
+    const [os, arch] = key.split("/");
+    if (state.distributionScope === "os") {
+      return os === selectedOS;
+    }
+    if (state.distributionScope === "arch") {
+      return arch === selectedArch;
+    }
+    return true;
+  });
+  const entries = platformKeys.map((key) => {
     const platform = preferredPlatform(release, key);
     return {
       key,
@@ -779,11 +803,17 @@ function updateDistributionChart() {
   const median = quantile(entries.map((entry) => entry.total), 0.5);
   const selectedIndex = entries.findIndex((entry) => entry.key === state.platform);
   elements.distributionTitle.textContent = `${release.version} platform footprint`;
-  elements.distributionContext.textContent = `${pluralize(entries.length, "platform")} · median ${formatBytes(median)}`;
+  const scopeLabel = state.distributionScope === "os"
+    ? OS_NAMES[selectedOS] || selectedOS
+    : state.distributionScope === "arch"
+      ? ARCH_NAMES[selectedArch] || selectedArch
+      : "";
+  const platformCount = pluralize(entries.length, "platform");
+  elements.distributionContext.textContent = `${scopeLabel ? `${entries.length} ${scopeLabel} ${entries.length === 1 ? "platform" : "platforms"}` : platformCount} · median ${formatBytes(median)}`;
   if (selectedIndex >= 0) {
     const selected = entries[selectedIndex];
     const difference = sizeChangePercent(median, selected.total);
-    elements.distributionNote.textContent = `Selected size rank: ${selectedIndex + 1}/${entries.length} · ${distributionDifferenceLabel(difference)}.`;
+    elements.distributionNote.textContent = `Selected size rank: ${selectedIndex + 1}/${entries.length} · ${distributionDifferenceLabel(difference)}. Focus chart and use Up/Down to select.`;
   } else {
     elements.distributionNote.textContent = "The median is calculated across measured platforms in this release.";
   }
@@ -800,11 +830,19 @@ function updateDistributionChart() {
   distributionAxis.beginAtZero = false;
   distributionAxis.min = Math.max(0, lowest - axisPadding);
   distributionAxis.max = highest + axisPadding;
-  updateDistributionTable(entries, median);
+  elements.distributionSummary.replaceChildren(...entries.map((entry, index) => {
+    const item = document.createElement("li");
+    const difference = sizeChangePercent(median, entry.total);
+    if (entry.key === state.platform) {
+      item.setAttribute("aria-current", "true");
+    }
+    item.textContent = `${entry.key === state.platform ? "Selected. " : ""}${index + 1}. ${entry.label}: ${formatBytes(entry.total)}; ${distributionDifferenceLabel(difference)}.`;
+    return item;
+  }));
   destroyChart("distribution");
   state.charts.distribution = new Chart(labeledChartCanvas(
     "#distributionChart",
-    `Executable footprint across ${entries.length} platforms in ${release.version}`,
+    `Executable footprint across ${entries.length} platforms in ${release.version}. ${elements.distributionNote.textContent}`,
   ), {
     type: "scatter",
     data: {
@@ -867,31 +905,7 @@ function updateDistributionChart() {
       layout: { padding: { right: 8 } },
     },
   });
-}
-
-function updateDistributionTable(entries, median) {
-  elements.distributionTable.replaceChildren(...entries.map((entry, index) => {
-    const row = document.createElement("tr");
-    if (entry.key === state.platform) {
-      row.setAttribute("aria-current", "true");
-    }
-    const platformCell = cell("", "release-cell");
-    const platformButton = document.createElement("button");
-    platformButton.type = "button";
-    platformButton.className = "distribution-platform";
-    platformButton.dataset.platform = entry.key;
-    platformButton.textContent = entry.label;
-    platformButton.addEventListener("click", () => selectDistributionPlatform(entry.key, true));
-    platformCell.append(platformButton);
-    const difference = sizeChangePercent(median, entry.total);
-    row.append(
-      cell(String(index + 1)),
-      platformCell,
-      cell(formatBytes(entry.total)),
-      cell(distributionDifferenceLabel(difference), difference > 0 ? "delta-regression" : difference < 0 ? "delta-improvement" : ""),
-    );
-    return row;
-  }));
+  requestAnimationFrame(updateActiveSectionNavigation);
 }
 
 function distributionDifferenceLabel(difference) {
@@ -914,16 +928,29 @@ function selectPlatformFromDistribution(event, _activeElements, chart) {
   setTimeout(() => selectDistributionPlatform(selected.key), 0);
 }
 
-function selectDistributionPlatform(key, restoreFocus = false) {
+function selectPlatformFromDistributionKeyboard(event) {
+  const points = state.charts.distribution?.data.datasets[0].data || [];
+  if (points.length === 0 || !["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+    return;
+  }
+  event.preventDefault();
+  const current = Math.max(0, points.findIndex((point) => point.key === state.platform));
+  const index = event.key === "Home"
+    ? 0
+    : event.key === "End"
+      ? points.length - 1
+      : event.key === "ArrowUp"
+        ? Math.max(0, current - 1)
+        : Math.min(points.length - 1, current + 1);
+  selectDistributionPlatform(points[index].key);
+  elements.distributionChart.focus();
+}
+
+function selectDistributionPlatform(key) {
   state.platform = key;
   elements.platformSelect.value = key;
   updatePlatform();
   syncURLState();
-  if (restoreFocus) {
-    [...elements.distributionTable.querySelectorAll(".distribution-platform")]
-      .find((button) => button.dataset.platform === key)
-      ?.focus();
-  }
 }
 
 function configureComparison(reset) {
@@ -1007,13 +1034,10 @@ function synchronizeComparisonFromTop() {
   populateComparisonSides(false);
 }
 
-function selectHasValue(select, value) {
-  return [...select.options].some((option) => option.value === value);
-}
-
 function renderComparison() {
   const entries = comparisonEntries();
   if (!entries) {
+    elements.downloadComparisonCsv.disabled = true;
     return;
   }
   const left = summarizePlatform(entries.left.label, entries.left.platform);
@@ -1031,6 +1055,7 @@ function renderComparison() {
   elements.compareDeltaBytes.textContent = formatSignedBytes(change.bytes);
   elements.compareTableLeft.textContent = left.label;
   elements.compareTableRight.textContent = right.label;
+  elements.downloadComparisonCsv.disabled = false;
 
   const tools = comparisonTools(left, right);
   const analysis = comparisonAnalysis(left, right, tools, change);
@@ -1098,8 +1123,8 @@ function comparisonChange(left, right) {
       percent: earlier.total === 0 ? 0 : (bytes / earlier.total) * 100,
       regression: bytes > 0,
       earlierSide,
-      label: "Size change over time",
-      columnLabel: "Size change over time",
+      label: "Chronological change",
+      columnLabel: "Size change",
       description: `Footprint size change from ${earlier.label} to ${later.label}; negative means the later release is smaller`,
     };
   }
@@ -1270,41 +1295,36 @@ function formatSignedMiB(value) {
 function updateComparisonTable(tools, earlierSide) {
   elements.compareTable.replaceChildren(...tools.map((tool) => {
     const row = document.createElement("tr");
-    let delta = "—";
-    let deltaClass = "";
-    if (earlierSide) {
-      const earlier = earlierSide === "left" ? tool.left : tool.right;
-      const later = earlierSide === "left" ? tool.right : tool.left;
-      if (earlier === null) {
-        delta = "New";
-        deltaClass = "delta-regression";
-      } else if (later === null) {
-        delta = "Removed";
-        deltaClass = "delta-improvement";
-      } else if (earlier > 0) {
-        const percent = sizeChangePercent(earlier, later);
-        delta = formatPercent(percent);
-        deltaClass = percent > 0 ? "delta-regression" : "delta-improvement";
-      }
-    } else if (tool.left === null) {
-      delta = "New";
-      deltaClass = "delta-regression";
-    } else if (tool.right === null) {
-      delta = "Removed";
-      deltaClass = "delta-improvement";
-    } else if (tool.left > 0) {
-      const percent = ((tool.right / tool.left) - 1) * 100;
-      delta = formatPercent(percent);
-      deltaClass = percent > 0 ? "delta-regression" : "delta-improvement";
-    }
+    const change = comparisonToolChange(tool, earlierSide);
     row.append(
       cell(tool.name, "release-cell"),
       cell(tool.left === null ? "—" : formatBytes(tool.left)),
       cell(tool.right === null ? "—" : formatBytes(tool.right)),
-      cell(delta, deltaClass),
+      cell(change.text, change.className),
     );
     return row;
   }));
+}
+
+function comparisonToolChange(tool, earlierSide) {
+  const from = earlierSide === "right" ? tool.right : tool.left;
+  const to = earlierSide === "right" ? tool.left : tool.right;
+  if (from === null) {
+    return { text: "New", className: "delta-regression", status: "added", percent: null };
+  }
+  if (to === null) {
+    return { text: "Removed", className: "delta-improvement", status: "removed", percent: -100 };
+  }
+  if (from > 0) {
+    const percent = sizeChangePercent(from, to);
+    return {
+      text: formatPercent(percent),
+      className: percent > 0 ? "delta-regression" : percent < 0 ? "delta-improvement" : "",
+      status: "shared",
+      percent,
+    };
+  }
+  return { text: "—", className: "", status: "unavailable", percent: null };
 }
 
 function updateTable() {
@@ -1645,11 +1665,95 @@ function downloadCsv() {
     ].map(csvValue).join(","));
   }
 
-  const blob = new Blob([`${lines.join("\n")}\n`], { type: "text/csv;charset=utf-8" });
+  downloadTextFile(`go-size-history-${os}-${arch}.csv`, `${lines.join("\n")}\n`, "text/csv;charset=utf-8");
+}
+
+function downloadComparisonCsv() {
+  const entries = comparisonEntries();
+  if (!entries) {
+    return;
+  }
+  const left = summarizePlatform(entries.left.label, entries.left.platform);
+  const right = summarizePlatform(entries.right.label, entries.right.platform);
+  const change = comparisonChange(left, right);
+  const tools = comparisonTools(left, right);
+  const analysis = comparisonAnalysis(left, right, tools, change);
+  const context = state.comparison.mode === "releases" ? platformLabel(state.comparison.context) : state.comparison.context;
+  const basis = analysis.releaseMode ? `${analysis.from.label} -> ${analysis.to.label}` : "B vs A";
+  const header = [
+    "comparison_mode",
+    "context",
+    "change_basis",
+    "binary",
+    "a_label",
+    "b_label",
+    "a_bytes",
+    "b_bytes",
+    "b_minus_a_bytes",
+    "basis_from_label",
+    "basis_to_label",
+    "basis_from_bytes",
+    "basis_to_bytes",
+    "basis_delta_bytes",
+    "status",
+    "size_change_percent",
+  ];
+  const rows = [[
+    state.comparison.mode,
+    context,
+    basis,
+    "TOTAL",
+    left.label,
+    right.label,
+    left.total,
+    right.total,
+    right.total - left.total,
+    analysis.from.label,
+    analysis.to.label,
+    analysis.from.total,
+    analysis.to.total,
+    analysis.to.total - analysis.from.total,
+    "total",
+    change.percent,
+  ]];
+  for (const tool of analysis.contributions) {
+    const toolChange = comparisonToolChange(tool, change.earlierSide);
+    const basisFrom = toolChange.status === "added" ? "" : tool.from;
+    const basisTo = toolChange.status === "removed" ? "" : tool.to;
+    rows.push([
+      state.comparison.mode,
+      context,
+      basis,
+      tool.name,
+      left.label,
+      right.label,
+      tool.left ?? "",
+      tool.right ?? "",
+      (tool.right || 0) - (tool.left || 0),
+      analysis.from.label,
+      analysis.to.label,
+      basisFrom,
+      basisTo,
+      tool.rawDelta,
+      toolChange.status,
+      toolChange.percent ?? "",
+    ]);
+  }
+  const lines = [header, ...rows].map((row) => row.map(csvValue).join(","));
+  const filename = `go-size-comparison-${filenamePart(analysis.from.label)}-to-${filenamePart(analysis.to.label)}.csv`;
+  downloadTextFile(filename, `${lines.join("\n")}\n`, "text/csv;charset=utf-8");
+}
+
+function filenamePart(value) {
+  return value.toLowerCase().replace(/[^a-z0-9.-]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function downloadTextFile(filename, contents, type) {
+  const blob = new Blob([contents], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `go-size-history-${os}-${arch}.csv`;
+  link.download = filename;
   link.hidden = true;
   document.body.append(link);
   link.click();
@@ -1712,10 +1816,6 @@ function formatBytes(bytes) {
     return "—";
   }
   return `${(bytes / MEBIBYTE).toFixed(bytes >= 100 * MEBIBYTE ? 0 : 1)} MiB`;
-}
-
-function formatTooltip(label, bytes) {
-  return `${label}: ${formatBytes(bytes)} (${new Intl.NumberFormat("en").format(bytes)} B)`;
 }
 
 function formatPercent(value) {
@@ -1781,6 +1881,10 @@ async function applyURLState() {
   const trendMode = params.get("trend");
   if (["absolute", "indexed", "delta"].includes(trendMode)) {
     state.trendMode = trendMode;
+  }
+  const distributionScope = params.get("scope");
+  if (["all", "os", "arch"].includes(distributionScope)) {
+    state.distributionScope = distributionScope;
   }
   const compareMode = params.get("compare");
   if (["releases", "platforms"].includes(compareMode)) {
@@ -1884,6 +1988,8 @@ function syncURLState() {
   setURLParameter(url, "release", state.release);
   setURLParameter(url, "binary", state.tool);
   setURLParameter(url, "trend", state.trendMode);
+  url.searchParams.delete("changes");
+  setURLParameter(url, "scope", state.distributionScope);
   url.searchParams.delete("heatmap");
   setURLParameter(url, "compare", state.comparison.mode);
   setURLParameter(url, "against", state.comparison.right);
@@ -1895,5 +2001,60 @@ function setURLParameter(url, name, value) {
     url.searchParams.set(name, value);
   } else {
     url.searchParams.delete(name);
+  }
+}
+
+function setDistributionScope(scope) {
+  if (!scope || state.distributionScope === scope) {
+    return;
+  }
+  state.distributionScope = scope;
+  updateModeButtons(elements.distributionScopeButtons, scope, "distributionScope");
+  updateDistributionChart();
+  syncURLState();
+}
+
+function setupSectionNavigation() {
+  let scheduled = false;
+  const update = () => {
+    scheduled = false;
+    updateActiveSectionNavigation();
+  };
+  addEventListener("scroll", () => {
+    if (!scheduled) {
+      scheduled = true;
+      requestAnimationFrame(update);
+    }
+  }, { passive: true });
+  update();
+  const sections = dashboardSections();
+  const requestedSection = sections.find((entry) => entry.link.hash === location.hash)?.section || null;
+  if (requestedSection?.classList.contains("dashboard-section")) {
+    requestAnimationFrame(() => requestedSection.scrollIntoView({ block: "start" }));
+  }
+}
+
+function dashboardSections() {
+  return elements.sectionNavLinks.map((link) => ({
+    link,
+    section: document.querySelector(link.hash),
+  })).filter((entry) => entry.section);
+}
+
+function updateActiveSectionNavigation() {
+  const sections = dashboardSections();
+  const marker = scrollY + 90;
+  let current = sections[0];
+  for (const entry of sections) {
+    if (entry.section.offsetTop <= marker) {
+      current = entry;
+    }
+  }
+  for (const entry of sections) {
+    if (entry === current) {
+      entry.link.setAttribute("aria-current", "true");
+    } else {
+      entry.link.removeAttribute("aria-current");
+    }
   }
 }
