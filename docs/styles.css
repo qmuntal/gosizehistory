@@ -668,6 +668,16 @@ html[data-theme="dark"] .theme-icon--moon {
   font-weight: 600;
 }
 
+.comparison-insight {
+  margin: 0;
+  padding: 11px 20px;
+  color: var(--ink);
+  background: var(--subtle);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .comparison-charts {
   min-width: 0;
   display: grid;
@@ -1264,6 +1274,11 @@ td {
 
   .comparison-chart {
     padding: 14px 12px;
+  }
+
+  .comparison-insight {
+    padding-right: 12px;
+    padding-left: 12px;
   }
 
   .panel__tools {

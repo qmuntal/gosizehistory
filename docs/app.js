@@ -1,4 +1,4 @@
-const DATA_URL = "./data/go-tool-sizes.json?v=20260826-summary";
+const DATA_URL = "./data/go-tool-sizes.json?v=20260826-tip-marker";
 const MEBIBYTE = 1024 * 1024;
 
 const COLOR_SCHEMES = {
@@ -92,6 +92,7 @@ const elements = {
   releaseCount: document.querySelector("#releaseCount"),
   snapshotTitle: document.querySelector("#snapshotTitle"),
   snapshotTotal: document.querySelector("#snapshotTotal"),
+  snapshotInsight: document.querySelector("#snapshotInsight"),
   toolChartTitle: document.querySelector("#toolChartTitle"),
   toolCoverage: document.querySelector("#toolCoverage"),
   toolColumnHeader: document.querySelector("#toolColumnHeader"),
@@ -121,6 +122,7 @@ const elements = {
   compareTableRight: document.querySelector("#compareTableRight"),
   compareTable: document.querySelector("#compareTable"),
   comparisonAxisNote: document.querySelector("#comparisonAxisNote"),
+  comparisonInsight: document.querySelector("#comparisonInsight"),
   waterfallDirection: document.querySelector("#waterfallDirection"),
   trendModeButtons: [...document.querySelectorAll("[data-trend-mode]")],
   heatmapModeButtons: [...document.querySelectorAll("[data-heatmap-mode]")],
@@ -683,6 +685,13 @@ function updateSnapshot() {
 
   elements.snapshotTitle.textContent = `${Math.min(8, row.toolCount)} largest binaries in ${row.version}`;
   elements.snapshotTotal.textContent = `${formatBytes(row.executablePayload)} total`;
+  const ranked = [...row.platform.tools].sort((left, right) => right.size - left.size);
+  const largest = ranked[0];
+  const topCount = Math.min(3, ranked.length);
+  const topShare = sum(ranked.slice(0, topCount).map((tool) => tool.size)) / row.executablePayload * 100;
+  elements.snapshotInsight.textContent = largest
+    ? `${largest.name} accounts for ${formatUnsignedPercent(largest.size / row.executablePayload * 100)} of total; top ${topCount} ${topCount === 1 ? "accounts" : "account"} for ${formatUnsignedPercent(topShare)}.`
+    : "No binaries measured.";
   updateSnapshotChart(row);
 }
 
@@ -848,6 +857,7 @@ function renderComparison() {
 
   const tools = comparisonTools(left, right);
   const analysis = comparisonAnalysis(left, right, tools, change);
+  updateComparisonInsight(analysis);
   updateComparisonChart(analysis);
   updateWaterfallChart(analysis);
   updateComparisonTable(analysis.contributions, change.earlierSide);
@@ -870,6 +880,33 @@ function comparisonAnalysis(left, right, tools, change) {
     };
   }).sort((first, second) => Math.abs(second.contribution) - Math.abs(first.contribution));
   return { releaseMode, from, to, change, contributions };
+}
+
+function updateComparisonInsight(analysis) {
+  const shared = analysis.contributions.filter((tool) => tool.from > 0 && tool.to > 0);
+  const smaller = shared.filter((tool) => tool.rawDelta < 0).length;
+  const larger = shared.filter((tool) => tool.rawDelta > 0).length;
+  const unchanged = shared.length - smaller - larger;
+  const added = analysis.contributions.filter((tool) => tool.from === 0 && tool.to > 0).length;
+  const removed = analysis.contributions.filter((tool) => tool.from > 0 && tool.to === 0).length;
+  const sizeSummary = [
+    smaller > 0 ? `${smaller} smaller` : "",
+    larger > 0 ? `${larger} larger` : "",
+    unchanged > 0 ? `${unchanged} unchanged` : "",
+  ].filter(Boolean).join(" · ") || "no shared binaries";
+  const inventorySummary = added === 0 && removed === 0
+    ? "No binaries added or removed."
+    : `${[added > 0 ? `${added} added` : "", removed > 0 ? `${removed} removed` : ""].filter(Boolean).join(" · ")}.`;
+  const dominant = analysis.contributions.find((tool) => tool.rawDelta !== 0);
+  let dominantSummary = "No size change.";
+  if (dominant?.from === 0) {
+    dominantSummary = `Largest change: ${dominant.name} added at ${formatBytes(dominant.to)}.`;
+  } else if (dominant?.to === 0) {
+    dominantSummary = `Largest change: ${dominant.name} removed at ${formatBytes(dominant.from)}.`;
+  } else if (dominant) {
+    dominantSummary = `Largest change: ${dominant.name} ${formatSignedMiB(dominant.rawDelta / MEBIBYTE)}.`;
+  }
+  elements.comparisonInsight.textContent = `In ${analysis.to.label}: ${sizeSummary}. ${inventorySummary} ${dominantSummary}`;
 }
 
 function comparisonChange(left, right) {
@@ -1050,7 +1087,8 @@ function formatSignedAxisValue(value) {
 }
 
 function formatSignedMiB(value) {
-  return `${value > 0 ? "+" : ""}${value.toFixed(1)} MiB`;
+  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
+  return `${sign}${Math.abs(value).toFixed(1)} MiB`;
 }
 
 function updateWaterfallChart(analysis) {
@@ -1340,7 +1378,7 @@ function lineDataset(label, data, borderColor, backgroundColor, fill = true) {
     backgroundColor,
     borderWidth: 2,
     pointBackgroundColor: (context) => state.releases[context.dataIndex]?.development ? COLORS.surface : borderColor,
-    pointBorderColor: COLORS.surface,
+    pointBorderColor: (context) => state.releases[context.dataIndex]?.development ? borderColor : COLORS.surface,
     pointBorderWidth: (context) => state.releases[context.dataIndex]?.development ? 3 : 1,
     pointRadius: (context) => state.releases[context.dataIndex]?.development ? 6 : 3,
     pointStyle: (context) => state.releases[context.dataIndex]?.development ? "rectRot" : "circle",

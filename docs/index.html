@@ -18,10 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20260826-summary">
+  <link rel="stylesheet" href="./styles.css?v=20260826-tip-marker">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
-  <script defer src="./app.js?v=20260826-summary"></script>
+  <script defer src="./app.js?v=20260826-tip-marker"></script>
 </head>
 <body>
   <a class="skip-link" href="#dashboard">Skip to dashboard</a>
@@ -198,6 +198,8 @@
           </section>
         </div>
 
+        <p id="comparisonInsight" class="comparison-insight" aria-live="polite">—</p>
+
         <div class="comparison-charts">
           <section class="comparison-chart">
             <header>
@@ -257,6 +259,7 @@
           </div>
           <span id="snapshotTotal" class="panel__context">—</span>
         </header>
+        <p id="snapshotInsight" class="panel__note">—</p>
         <div class="chart-frame chart-frame--snapshot">
           <canvas id="snapshotChart" role="img" aria-label="Largest executable binaries in the selected release"></canvas>
         </div>
