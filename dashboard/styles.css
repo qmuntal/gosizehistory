@@ -842,143 +842,55 @@ html[data-theme="dark"] .theme-icon--moon {
   height: 370px;
 }
 
-.panel--heatmap {
+.panel--distribution {
   grid-column: 1 / -1;
-  padding-right: 0;
-  padding-left: 0;
 }
 
-.panel--heatmap .panel__header,
-.panel--heatmap .panel__note {
-  padding-right: 20px;
-  padding-left: 20px;
+.chart-frame--distribution {
+  min-height: 340px;
 }
 
-.heatmap-legend {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 7px;
-  min-height: 24px;
-  padding: 0 20px 8px;
-  color: var(--ink-soft);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px;
-}
-
-.heatmap-legend__scale {
-  width: 120px;
-  height: 8px;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-}
-
-.heatmap-legend__scale--absolute {
-  background: linear-gradient(90deg, rgba(0, 173, 216, 0.14), rgba(0, 173, 216, 0.96));
-}
-
-.heatmap-legend__scale--delta {
-  background: linear-gradient(90deg, rgba(43, 127, 116, 0.94), var(--subtle), rgba(212, 130, 24, 0.94));
-}
-
-.heatmap-legend__missing {
-  margin-left: 8px;
-}
-
-.heatmap-legend__missing::before {
-  width: 8px;
-  height: 8px;
-  display: inline-block;
-  margin-right: 4px;
-  content: "";
-  vertical-align: -1px;
-  background: repeating-linear-gradient(135deg, var(--subtle), var(--subtle) 2px, var(--line) 2px, var(--line) 4px);
-  border: 1px solid var(--line);
-}
-
-.heatmap {
-  max-height: 720px;
+.distribution-table-wrap {
+  max-height: 360px;
   overflow: auto;
+  margin: 14px -20px -20px;
   border-top: 1px solid var(--line);
 }
 
-.heatmap__grid {
-  --cell-size: 22px;
-  width: max-content;
-  display: grid;
-  grid-template-columns: 150px repeat(var(--release-columns), var(--cell-size));
-  grid-auto-rows: var(--cell-size);
-  gap: 2px;
-  padding: 50px 18px 18px;
+.distribution-table {
+  min-width: 600px;
+  font-size: 12px;
 }
 
-.heatmap__corner,
-.heatmap__row-label,
-.heatmap__column-label {
-  color: var(--ink-soft);
-  font-family: "IBM Plex Mono", monospace;
-  font-size: 9px;
+.distribution-table th,
+.distribution-table td {
+  padding: 9px 12px;
 }
 
-.heatmap__corner {
-  position: sticky;
-  left: 18px;
-  z-index: 3;
-  display: flex;
-  align-items: flex-end;
-  padding: 0 6px 4px 0;
-  background: var(--surface);
+.distribution-table tbody tr[aria-current="true"] {
+  background: var(--subtle);
 }
 
-.heatmap__column-label {
-  height: 58px;
-  align-self: end;
-  writing-mode: vertical-rl;
-  transform: translateY(-38px) rotate(180deg);
-  white-space: nowrap;
-}
-
-.heatmap__row-label {
-  position: sticky;
-  left: 18px;
-  z-index: 2;
-  overflow: hidden;
-  padding-right: 7px;
-  background: var(--surface);
-  line-height: var(--cell-size);
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.heatmap__cell {
-  width: var(--cell-size);
-  height: var(--cell-size);
+.distribution-platform {
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: 2px;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
   cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
 }
 
-.heatmap__cell:hover {
-  border-color: var(--ink);
+.distribution-platform:hover {
+  color: var(--gopher-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.heatmap__cell:focus-visible {
-  z-index: 4;
+.distribution-platform:focus-visible {
   outline: 2px solid var(--gopher-deep);
-  outline-offset: 1px;
-}
-
-.heatmap__cell--missing {
-  cursor: default;
-  background: repeating-linear-gradient(135deg, var(--subtle), var(--subtle) 3px, var(--line) 3px, var(--line) 5px);
-  border-color: var(--line);
-}
-
-.heatmap__cell--selected {
-  outline: 2px solid var(--ink);
-  outline-offset: 1px;
+  outline-offset: 3px;
 }
 
 .table-wrap {
@@ -1114,9 +1026,14 @@ td {
   .panel--composition,
   .panel--tool,
   .panel--compare,
-  .panel--heatmap,
+  .panel--distribution,
   .panel--table {
     grid-column: 1 / -1;
+  }
+
+  .distribution-table-wrap {
+    margin-right: -12px;
+    margin-left: -12px;
   }
 
   .compare-table-wrap {
@@ -1212,7 +1129,7 @@ td {
   .panel--composition,
   .panel--tool,
   .panel--compare,
-  .panel--heatmap,
+  .panel--distribution,
   .panel--table {
     grid-column: 1;
   }
@@ -1228,11 +1145,6 @@ td {
 
   .panel--compare {
     padding: 0;
-  }
-
-  .panel--heatmap {
-    padding-right: 0;
-    padding-left: 0;
   }
 
   .compare-header {
@@ -1309,23 +1221,6 @@ td {
     padding: 0 7px;
   }
 
-  .panel--heatmap .panel__header,
-  .panel--heatmap .panel__note {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .heatmap__grid {
-    grid-template-columns: 132px repeat(var(--release-columns), var(--cell-size));
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .heatmap__corner,
-  .heatmap__row-label {
-    left: 12px;
-  }
-
   .panel__header {
     min-height: 58px;
     padding-right: 0;
@@ -1347,6 +1242,13 @@ td {
     text-align: right;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .panel--distribution .panel__context {
+    max-width: 55%;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
   }
 
   .chart-frame,

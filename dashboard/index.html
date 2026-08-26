@@ -18,10 +18,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20260826-stable-default">
+  <link rel="stylesheet" href="./styles.css?v=20260826-platform-distribution">
   <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
-  <script defer src="./app.js?v=20260826-stable-default"></script>
+  <script defer src="./app.js?v=20260826-platform-distribution"></script>
 </head>
 <body>
   <a class="skip-link" href="#dashboard">Skip to dashboard</a>
@@ -233,20 +233,31 @@
         </div>
       </article>
 
-      <article class="panel panel--heatmap">
+      <article class="panel panel--distribution">
         <header class="panel__header">
           <div>
-            <p class="eyebrow">Coverage map</p>
-            <h2>Platform × release</h2>
+            <p class="eyebrow">Cross-platform</p>
+            <h2 id="distributionTitle">Platform footprint distribution</h2>
           </div>
-          <div class="segmented segmented--compact" role="group" aria-label="Heatmap metric">
-            <button class="segmented__button" type="button" data-heatmap-mode="absolute" aria-pressed="true">Footprint</button>
-            <button class="segmented__button" type="button" data-heatmap-mode="delta" aria-pressed="false">Δ prior</button>
-          </div>
+          <span id="distributionContext" class="panel__context">—</span>
         </header>
-        <p id="heatmapNote" class="panel__note">Color intensity uses the 5th–95th percentile; hatched cells have no measurement.</p>
-        <div id="heatmapLegend" class="heatmap-legend" aria-hidden="true"></div>
-        <div id="heatmap" class="heatmap" role="grid" aria-label="Platform and release footprint heatmap"></div>
+        <p id="distributionNote" class="panel__note">Each point is one platform; the selected platform is highlighted.</p>
+        <div id="distributionFrame" class="chart-frame chart-frame--distribution">
+          <canvas id="distributionChart" role="img" aria-label="Executable footprint distribution across platforms"></canvas>
+        </div>
+        <div class="distribution-table-wrap">
+          <table class="distribution-table">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Platform</th>
+                <th scope="col">Total size</th>
+                <th scope="col">Vs median</th>
+              </tr>
+            </thead>
+            <tbody id="distributionTable"></tbody>
+          </table>
+        </div>
       </article>
 
       <article class="panel panel--snapshot">
