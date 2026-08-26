@@ -119,9 +119,11 @@ Each API archive remains a separate platform record. This matters for historical
 
 ## Dashboard
 
-The static dashboard lives in `docs/` and reads the single versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Its comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release, including per-binary additions, removals, and size deltas. The top Platform and Snapshot filters define comparison side A; the comparison panel selects only side B.
+The static dashboard lives in `docs/` and reads the single versioned snapshot at `docs/data/go-tool-sizes.json`. It charts total executable footprint, binary count, largest binaries, and individual binary evolution, plus CSV and JSON exports. Trend views switch between absolute size, a first-release index, and change from the prior release. A platform-by-release heatmap makes coverage gaps and historical size changes explicit.
 
-Release comparisons report chronological footprint efficiency, independent of which selector contains the newer release: positive means the later release is smaller, while negative means it grew. Platform comparisons remain a direct B-vs-A delta.
+The comparison workspace supports release-to-release comparisons for one platform and platform-to-platform comparisons within one release. It includes per-binary additions, removals, diverging size contributions, and a footprint bridge from A to B. The top Platform and Snapshot filters define comparison side A; the comparison panel selects only side B.
+
+Release comparisons report chronological footprint size change, independent of which selector contains the newer release: negative means the later release is smaller, while positive means it grew. Platform comparisons remain a direct B-vs-A delta.
 
 The dashboard follows the operating-system light or dark preference on first load and persists changes made with the header theme toggle.
 

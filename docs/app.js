@@ -79,12 +79,15 @@ const elements = {
   generatedAt: document.querySelector("#generatedAt"),
   datasetRange: document.querySelector("#datasetRange"),
   trendTarget: document.querySelector("#trendTarget"),
-  latestFootprint: document.querySelector("#latestFootprint"),
-  latestRelease: document.querySelector("#latestRelease"),
-  footprintChange: document.querySelector("#footprintChange"),
-  firstRelease: document.querySelector("#firstRelease"),
-  peakFootprint: document.querySelector("#peakFootprint"),
-  peakRelease: document.querySelector("#peakRelease"),
+  trendChartTitle: document.querySelector("#trendChartTitle"),
+  trendNote: document.querySelector("#trendNote"),
+  toolNote: document.querySelector("#toolNote"),
+  tipSizeChange: document.querySelector("#tipSizeChange"),
+  tipSizeChangeContext: document.querySelector("#tipSizeChangeContext"),
+  stableSizeChange: document.querySelector("#stableSizeChange"),
+  stableSizeChangeContext: document.querySelector("#stableSizeChangeContext"),
+  largestJump: document.querySelector("#largestJump"),
+  largestJumpContext: document.querySelector("#largestJumpContext"),
   releaseCoverage: document.querySelector("#releaseCoverage"),
   releaseCount: document.querySelector("#releaseCount"),
   snapshotTitle: document.querySelector("#snapshotTitle"),
@@ -117,6 +120,11 @@ const elements = {
   compareTableLeft: document.querySelector("#compareTableLeft"),
   compareTableRight: document.querySelector("#compareTableRight"),
   compareTable: document.querySelector("#compareTable"),
+  comparisonAxisNote: document.querySelector("#comparisonAxisNote"),
+  trendModeButtons: [...document.querySelectorAll("[data-trend-mode]")],
+  heatmapModeButtons: [...document.querySelectorAll("[data-heatmap-mode]")],
+  heatmap: document.querySelector("#heatmap"),
+  heatmapLegend: document.querySelector("#heatmapLegend"),
 };
 
 const state = {
@@ -126,6 +134,8 @@ const state = {
   platform: "linux/amd64",
   release: "",
   tool: "compile",
+  trendMode: "absolute",
+  heatmapMode: "absolute",
   rows: [],
   comparison: {
     mode: "releases",
@@ -223,6 +233,12 @@ function bindControls() {
       configureComparison(true);
     });
   }
+  for (const button of elements.trendModeButtons) {
+    button.addEventListener("click", () => setTrendMode(button.dataset.trendMode));
+  }
+  for (const button of elements.heatmapModeButtons) {
+    button.addEventListener("click", () => setHeatmapMode(button.dataset.heatmapMode));
+  }
   elements.compareRightSelect.addEventListener("change", () => {
     state.comparison.right = elements.compareRightSelect.value;
     renderComparison();
@@ -305,6 +321,7 @@ function updatePlatform(synchronize = true) {
   updateToolChart();
   updateSnapshot();
   updateTable();
+  updateHeatmap();
   elements.trendTarget.textContent = platformLabel(state.platform);
   if (synchronize) {
     synchronizeComparisonFromTop();
@@ -358,40 +375,132 @@ function makeRow(release, platform) {
 }
 
 function updateMetrics(rows) {
-  const first = rows[0];
-  const latest = rows.at(-1);
-  const peak = rows.reduce((largest, row) => row.executablePayload > largest.executablePayload ? row : largest, rows[0]);
-  const change = ((latest.executablePayload / first.executablePayload) - 1) * 100;
+  const stableRows = rows.filter((row) => releaseByVersion(row.version)?.stable);
+  const tipRow = rows.find((row) => releaseByVersion(row.version)?.development);
+  const latestStable = stableRows.at(-1);
+  const previousStable = stableRows.at(-2);
 
-  elements.latestFootprint.textContent = formatBytes(latest.executablePayload);
-  elements.latestRelease.textContent = latest.version;
-  elements.footprintChange.textContent = formatPercent(change);
-  elements.footprintChange.className = change >= 0 ? "delta-positive" : "delta-negative";
-  elements.firstRelease.textContent = `from ${first.version}`;
-  elements.peakFootprint.textContent = formatBytes(peak.executablePayload);
-  elements.peakRelease.textContent = peak.version;
+  if (tipRow && latestStable) {
+    setSizeChangeMetric(
+      elements.tipSizeChange,
+      elements.tipSizeChangeContext,
+      sizeChangePercent(latestStable.executablePayload, tipRow.executablePayload),
+      `${latestStable.version} → ${tipRow.version}`,
+    );
+  } else {
+    setUnavailableMetric(elements.tipSizeChange, elements.tipSizeChangeContext, "Tip unavailable");
+  }
+
+  if (latestStable && previousStable) {
+    setSizeChangeMetric(
+      elements.stableSizeChange,
+      elements.stableSizeChangeContext,
+      sizeChangePercent(previousStable.executablePayload, latestStable.executablePayload),
+      `${previousStable.version} → ${latestStable.version}`,
+    );
+  } else {
+    setUnavailableMetric(elements.stableSizeChange, elements.stableSizeChangeContext, "Insufficient history");
+  }
+
+  let largestChange = null;
+  for (let index = 1; index < stableRows.length; index += 1) {
+    const earlier = stableRows[index - 1];
+    const later = stableRows[index];
+    const percent = sizeChangePercent(earlier.executablePayload, later.executablePayload);
+    if (!largestChange || Math.abs(percent) > Math.abs(largestChange.percent)) {
+      largestChange = { earlier, later, percent };
+    }
+  }
+  if (largestChange) {
+    setSizeChangeMetric(
+      elements.largestJump,
+      elements.largestJumpContext,
+      largestChange.percent,
+      `${largestChange.earlier.version} → ${largestChange.later.version}`,
+    );
+  }
   elements.releaseCoverage.textContent = `${rows.length} / ${state.releases.length}`;
-  elements.releaseCount.textContent = `${pluralize(rows.length, "release")} measured`;
+  elements.releaseCount.textContent = `${formatUnsignedPercent((rows.length / state.releases.length) * 100)} measured`;
+}
+
+function setSizeChangeMetric(valueElement, contextElement, percent, context) {
+  valueElement.textContent = formatPercent(percent);
+  valueElement.className = percent > 0 ? "delta-regression" : "delta-improvement";
+  contextElement.textContent = context;
+}
+
+function setUnavailableMetric(valueElement, contextElement, context) {
+  valueElement.textContent = "—";
+  valueElement.className = "";
+  contextElement.textContent = context;
+}
+
+function sizeChangePercent(earlier, later) {
+  return earlier === 0 ? 0 : ((later - earlier) / earlier) * 100;
+}
+
+function setTrendMode(mode) {
+  if (!mode || state.trendMode === mode) {
+    return;
+  }
+  state.trendMode = mode;
+  updateModeButtons(elements.trendModeButtons, mode, "trendMode");
+  updateFootprintChart();
+  updateToolChart();
+}
+
+function setHeatmapMode(mode) {
+  if (!mode || state.heatmapMode === mode) {
+    return;
+  }
+  state.heatmapMode = mode;
+  updateModeButtons(elements.heatmapModeButtons, mode, "heatmapMode");
+  updateHeatmap();
+}
+
+function updateModeButtons(buttons, mode, dataKey) {
+  for (const button of buttons) {
+    button.setAttribute("aria-pressed", String(button.dataset[dataKey] === mode));
+  }
 }
 
 function updateFootprintChart() {
+  const series = transformTrendSeries(state.rows, (row) => row.platform ? row.executablePayload : null);
+  const mode = trendModeDefinition();
+  elements.trendChartTitle.textContent = mode.toolchainTitle;
+  elements.trendNote.textContent = trendNote(series, "Gaps indicate an unavailable platform.");
+
   destroyChart("footprint");
   state.charts.footprint = new Chart(document.querySelector("#footprintChart"), {
     type: "line",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
       datasets: [
-        lineDataset("Total executables", state.rows.map((row) => row.platform ? row.executablePayload : null), COLORS.gopher, COLORS.gopherFill),
+        lineDataset(mode.datasetLabel, series.values, COLORS.gopher, COLORS.gopherFill, mode.fill),
       ],
     },
-    options: commonChartOptions((context) => formatTooltip(context.dataset.label, context.parsed.y), selectReleaseFromChart),
+    options: commonChartOptions(
+      trendTooltipCallbacks(state.rows, (row) => row.platform ? row.executablePayload : null, "Footprint"),
+      selectReleaseFromChart,
+      false,
+      mode.axisKind,
+    ),
   });
 }
 
 function updateCountChart() {
-  const options = commonChartOptions((context) => `${context.parsed.y} binaries`, selectReleaseFromChart);
-  options.scales.y.title.display = false;
-  options.scales.y.ticks = { precision: 0, maxTicksLimit: 6 };
+  const options = commonChartOptions({
+    title: (items) => state.rows[items[0]?.dataIndex]?.version || "",
+    label: (context) => `${context.parsed.y} binaries`,
+    afterLabel: (context) => {
+      const index = context.dataIndex;
+      if (index === 0 || !state.rows[index - 1].platform) {
+        return "No prior comparable release";
+      }
+      const difference = context.parsed.y - state.rows[index - 1].toolCount;
+      return `Vs prior: ${difference > 0 ? "+" : ""}${difference}`;
+    },
+  }, selectReleaseFromChart, false, "count");
   options.plugins.legend.display = false;
 
   destroyChart("count");
@@ -408,10 +517,13 @@ function updateCountChart() {
 }
 
 function updateToolChart() {
-  const data = state.rows.map((row) => toolForRow(row, state.tool)?.size ?? null);
-  const coverage = data.filter((value) => value !== null).length;
-  elements.toolChartTitle.textContent = `${state.tool} binary`;
-  elements.toolCoverage.textContent = `${coverage}/${state.releases.length} releases`;
+  const rawValues = state.rows.map((row) => toolForRow(row, state.tool)?.size ?? null);
+  const series = transformTrendSeries(state.rows, (_row, index) => rawValues[index]);
+  const coverage = rawValues.filter((value) => value !== null).length;
+  const mode = trendModeDefinition();
+  elements.toolChartTitle.textContent = `${state.tool} · ${mode.binaryTitle}`;
+  elements.toolCoverage.textContent = `${coverage}/${state.releases.length} releases · ${state.releases.length - coverage} gaps`;
+  elements.toolNote.textContent = trendNote(series, "Gaps indicate the binary was not shipped.");
   elements.toolColumnHeader.textContent = state.tool;
 
   destroyChart("tool");
@@ -419,10 +531,138 @@ function updateToolChart() {
     type: "line",
     data: {
       labels: state.rows.map((row) => shortVersion(row.version)),
-      datasets: [lineDataset(state.tool, data, COLORS.amber, COLORS.amberFill)],
+      datasets: [lineDataset(state.tool, series.values, COLORS.amber, COLORS.amberFill, mode.fill)],
     },
-    options: commonChartOptions((context) => formatTooltip(state.tool, context.parsed.y), selectReleaseFromChart),
+    options: commonChartOptions(
+      trendTooltipCallbacks(state.rows, (row) => toolForRow(row, state.tool)?.size ?? null, state.tool, true),
+      selectReleaseFromChart,
+      false,
+      mode.axisKind,
+    ),
   });
+}
+
+function transformTrendSeries(rows, valueForRow) {
+  const raw = rows.map((row, index) => valueForRow(row, index));
+  if (state.trendMode === "absolute") {
+    return { values: raw, baseline: null };
+  }
+  if (state.trendMode === "indexed") {
+    const baselineIndex = raw.findIndex((value) => value !== null);
+    if (baselineIndex < 0) {
+      return { values: raw, baseline: null };
+    }
+    const baseline = raw[baselineIndex];
+    return {
+      values: raw.map((value) => value === null ? null : (value / baseline) * 100),
+      baseline: rows[baselineIndex].version,
+    };
+  }
+  return {
+    values: raw.map((value, index) => {
+      if (index === 0 || value === null || raw[index - 1] === null) {
+        return null;
+      }
+      return sizeChangePercent(raw[index - 1], value);
+    }),
+    baseline: null,
+  };
+}
+
+function trendModeDefinition() {
+  switch (state.trendMode) {
+  case "indexed":
+    return {
+      axisKind: "index",
+      datasetLabel: "Relative footprint",
+      toolchainTitle: "Relative footprint (first = 100)",
+      binaryTitle: "relative size",
+      fill: false,
+    };
+  case "delta":
+    return {
+      axisKind: "percent",
+      datasetLabel: "Size change vs prior",
+      toolchainTitle: "Size change vs prior release",
+      binaryTitle: "size change vs prior",
+      fill: false,
+    };
+  default:
+    return {
+      axisKind: "bytes",
+      datasetLabel: "Total executables",
+      toolchainTitle: "Executable footprint over time",
+      binaryTitle: "binary size",
+      fill: true,
+    };
+  }
+}
+
+function trendNote(series, missingText) {
+  if (state.trendMode === "indexed" && series.baseline) {
+    return `${missingText} Baseline: ${series.baseline} = 100.`;
+  }
+  if (state.trendMode === "delta") {
+    return `${missingText} Negative values mean the later release is smaller.`;
+  }
+  return missingText;
+}
+
+function trendTooltipCallbacks(rows, valueForRow, label, includeRank = false) {
+  return {
+    title: (items) => rows[items[0]?.dataIndex]?.version || "",
+    label: (context) => `${label}: ${formatTrendValue(context.parsed.y)}`,
+    afterLabel: (context) => {
+      const index = context.dataIndex;
+      const row = rows[index];
+      const value = valueForRow(row, index);
+      if (value === null) {
+        return "Unavailable";
+      }
+      const details = [formatExactBytes(value)];
+      if (index > 0) {
+        const previous = valueForRow(rows[index - 1], index - 1);
+        if (previous !== null) {
+          const change = sizeChangePercent(previous, value);
+          const direction = change < 0 ? "smaller" : change > 0 ? "larger" : "unchanged";
+          details.push(`Vs prior: ${formatPercent(change)} · ${direction}`);
+        }
+      }
+      if (row.platform) {
+        if (includeRank) {
+          const ranked = [...row.platform.tools].sort((left, right) => right.size - left.size);
+          const rank = ranked.findIndex((tool) => tool.name === state.tool) + 1;
+          details.push(`Share: ${formatPercent((value / row.executablePayload) * 100)} · rank ${rank}/${ranked.length}`);
+        } else {
+          details.push(`${pluralize(row.toolCount, "binary")} shipped`);
+        }
+      }
+      const release = releaseByVersion(row.version);
+      if (release?.development && release.revision) {
+        details.push(`Tip: ${release.revision.slice(0, 12)}`);
+      }
+      return details;
+    },
+  };
+}
+
+function formatTrendValue(value) {
+  switch (state.trendMode) {
+  case "indexed":
+    return value.toFixed(1);
+  case "delta":
+    return formatPercent(value);
+  default:
+    return formatBytes(value);
+  }
+}
+
+function formatExactBytes(bytes) {
+  return `${new Intl.NumberFormat("en").format(bytes)} bytes`;
+}
+
+function formatUnsignedPercent(value) {
+  return `${value.toFixed(1)}%`;
 }
 
 function updateSnapshot() {
@@ -438,6 +678,7 @@ function updateSnapshot() {
 
 function updateSnapshotChart(row) {
   const tools = [...row.platform.tools].sort((left, right) => right.size - left.size).slice(0, 8);
+  const release = releaseByVersion(row.version);
   destroyChart("snapshot");
   state.charts.snapshot = new Chart(document.querySelector("#snapshotChart"), {
     type: "bar",
@@ -463,7 +704,23 @@ function updateSnapshotChart(row) {
       },
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: (context) => formatTooltip(context.label, context.parsed.x) } },
+        tooltip: {
+          callbacks: {
+            title: () => row.version,
+            label: (context) => `${context.label}: ${formatBytes(context.parsed.x)}`,
+            afterLabel: (context) => {
+              const tool = tools[context.dataIndex];
+              const details = [
+                formatExactBytes(tool.size),
+                `Share: ${formatUnsignedPercent((tool.size / row.executablePayload) * 100)} · rank ${context.dataIndex + 1}/${row.platform.tools.length}`,
+              ];
+              if (release?.development && release.revision) {
+                details.push(`Tip: ${release.revision.slice(0, 12)}`);
+              }
+              return details;
+            },
+          },
+        },
       },
       layout: { padding: { right: 8 } },
     },
@@ -577,8 +834,29 @@ function renderComparison() {
   elements.compareTableRight.textContent = right.label;
 
   const tools = comparisonTools(left, right);
-  updateComparisonChart(left, right, tools.slice(0, 12));
-  updateComparisonTable(tools, change.earlierSide);
+  const analysis = comparisonAnalysis(left, right, tools, change);
+  updateComparisonChart(analysis);
+  updateWaterfallChart(analysis);
+  updateComparisonTable(analysis.contributions, change.earlierSide);
+}
+
+function comparisonAnalysis(left, right, tools, change) {
+  const releaseMode = state.comparison.mode === "releases";
+  const from = releaseMode && change.earlierSide === "right" ? right : left;
+  const to = releaseMode && change.earlierSide === "right" ? left : right;
+  const contributions = tools.map((tool) => {
+    const fromValue = from.byTool.get(tool.name) || 0;
+    const toValue = to.byTool.get(tool.name) || 0;
+    const rawDelta = toValue - fromValue;
+    return {
+      ...tool,
+      from: fromValue,
+      to: toValue,
+      rawDelta,
+      contribution: rawDelta,
+    };
+  }).sort((first, second) => Math.abs(second.contribution) - Math.abs(first.contribution));
+  return { releaseMode, from, to, change, contributions };
 }
 
 function comparisonChange(left, right) {
@@ -588,15 +866,15 @@ function comparisonChange(left, right) {
     const earlierSide = compareReleases(leftRelease, rightRelease) <= 0 ? "left" : "right";
     const earlier = earlierSide === "left" ? left : right;
     const later = earlierSide === "left" ? right : left;
-    const bytes = earlier.total - later.total;
+    const bytes = later.total - earlier.total;
     return {
       bytes,
       percent: earlier.total === 0 ? 0 : (bytes / earlier.total) * 100,
-      regression: bytes < 0,
+      regression: bytes > 0,
       earlierSide,
-      label: "Efficiency",
-      columnLabel: "Efficiency",
-      description: `Footprint efficiency from ${earlier.label} to ${later.label}; negative means the later release is larger`,
+      label: "Size change",
+      columnLabel: "Size change",
+      description: `Footprint size change from ${earlier.label} to ${later.label}; negative means the later release is smaller`,
     };
   }
 
@@ -675,16 +953,23 @@ function comparisonTools(left, right) {
   })).sort((first, second) => Math.max(second.left || 0, second.right || 0) - Math.max(first.left || 0, first.right || 0));
 }
 
-function updateComparisonChart(left, right, tools) {
+function updateComparisonChart(analysis) {
+  const tools = analysis.contributions;
+  elements.comparisonAxisNote.textContent = analysis.releaseMode
+    ? "− smaller · + larger"
+    : "− B smaller · + B larger";
   destroyChart("comparison");
   state.charts.comparison = new Chart(document.querySelector("#comparisonChart"), {
     type: "bar",
     data: {
       labels: tools.map((tool) => tool.name),
-      datasets: [
-        barDataset(left.label, tools.map((tool) => tool.left || 0), COLORS.gopher),
-        barDataset(right.label, tools.map((tool) => tool.right || 0), COLORS.amber),
-      ],
+      datasets: [{
+        label: analysis.releaseMode ? "Size change contribution" : "B − A",
+        data: tools.map((tool) => tool.contribution / MEBIBYTE),
+        backgroundColor: tools.map((tool) => contributionColor(tool.contribution)),
+        borderRadius: 2,
+        maxBarThickness: 22,
+      }],
     },
     options: {
       indexAxis: "y",
@@ -693,13 +978,122 @@ function updateComparisonChart(left, right, tools) {
       interaction: { mode: "index", intersect: false },
       scales: {
         x: {
-          ...byteAxisOptions(true),
+          ...divergingAxisOptions(analysis.releaseMode ? "Size change contribution (MiB)" : "B − A (MiB)"),
         },
         y: { grid: { display: false } },
       },
       plugins: {
-        legend: { position: "bottom", align: "start" },
-        tooltip: { callbacks: { label: (context) => formatTooltip(context.dataset.label, context.parsed.x) } },
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${formatSignedMiB(context.parsed.x)}`,
+            afterLabel: (context) => {
+              const tool = tools[context.dataIndex];
+              return [
+                `${analysis.from.label}: ${formatBytes(tool.from)}`,
+                `${analysis.to.label}: ${formatBytes(tool.to)}`,
+                tool.from === 0 ? "New binary" : `Size change: ${formatPercent(sizeChangePercent(tool.from, tool.to))}`,
+              ];
+            },
+          },
+        },
+      },
+      layout: { padding: { left: 8, right: 8 } },
+    },
+  });
+}
+
+function contributionColor(value) {
+  if (value === 0) {
+    return COLORS.graphite;
+  }
+  return value < 0 ? COLORS.teal : COLORS.amber;
+}
+
+function divergingAxisOptions(title) {
+  return {
+    grid: {
+      color: (context) => context.tick.value === 0 ? COLORS.inkSoft : COLORS.grid,
+      lineWidth: (context) => context.tick.value === 0 ? 2 : 1,
+    },
+    border: { display: false },
+    title: axisTitle(title),
+    ticks: {
+      maxTicksLimit: 7,
+      callback: formatSignedAxisValue,
+    },
+  };
+}
+
+function formatSignedAxisValue(value) {
+  if (value === 0) {
+    return "0";
+  }
+  const digits = Math.abs(value) < 1 ? 2 : Math.abs(value) < 10 ? 1 : 0;
+  return `${value > 0 ? "+" : ""}${Number(value.toFixed(digits))}`;
+}
+
+function formatSignedMiB(value) {
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)} MiB`;
+}
+
+function updateWaterfallChart(analysis) {
+  const visible = analysis.contributions.slice(0, 8);
+  const remaining = analysis.contributions.slice(8);
+  const changes = visible.map((tool) => ({ name: tool.name, delta: tool.rawDelta }));
+  if (remaining.length > 0) {
+    changes.push({ name: "Other", delta: sum(remaining.map((tool) => tool.rawDelta)) });
+  }
+
+  const labels = [analysis.from.label, ...changes.map((change) => change.name), analysis.to.label];
+  const values = [[0, analysis.from.total]];
+  const colors = [COLORS.gopher];
+  let running = analysis.from.total;
+  for (const change of changes) {
+    const next = running + change.delta;
+    values.push([running, next]);
+    colors.push(change.delta > 0 ? COLORS.amber : COLORS.teal);
+    running = next;
+  }
+  values.push([0, analysis.to.total]);
+  colors.push(COLORS.graphite);
+
+  destroyChart("waterfall");
+  state.charts.waterfall = new Chart(document.querySelector("#waterfallChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Footprint bridge",
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 2,
+        maxBarThickness: 32,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { maxRotation: 45, minRotation: 0, autoSkip: false },
+        },
+        y: byteAxisOptions(),
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => {
+              const index = context.dataIndex;
+              if (index === 0 || index === labels.length - 1) {
+                return `Total: ${formatBytes(context.raw[1])}`;
+              }
+              return `Change: ${formatSignedMiB((context.raw[1] - context.raw[0]) / MEBIBYTE)}`;
+            },
+          },
+        },
       },
       layout: { padding: { right: 8 } },
     },
@@ -721,9 +1115,9 @@ function updateComparisonTable(tools, earlierSide) {
         delta = "Removed";
         deltaClass = "delta-improvement";
       } else if (earlier > 0) {
-        const percent = ((earlier - later) / earlier) * 100;
+        const percent = sizeChangePercent(earlier, later);
         delta = formatPercent(percent);
-        deltaClass = percent < 0 ? "delta-regression" : "delta-improvement";
+        deltaClass = percent > 0 ? "delta-regression" : "delta-improvement";
       }
     } else if (tool.left === null) {
       delta = "New";
@@ -752,7 +1146,7 @@ function updateTable() {
   elements.releaseTable.replaceChildren(...[...rows].reverse().map((row) => {
     const chronologicalIndex = rows.indexOf(row);
     const previous = chronologicalIndex > 0 ? rows[chronologicalIndex - 1] : null;
-    const change = previous ? ((row.executablePayload / previous.executablePayload) - 1) * 100 : null;
+    const change = previous ? sizeChangePercent(previous.executablePayload, row.executablePayload) : null;
     const selectedTool = toolForRow(row, state.tool);
     const largest = [...row.platform.tools].sort((left, right) => right.size - left.size)[0];
 
@@ -764,7 +1158,7 @@ function updateTable() {
     tableRow.append(
       cell(row.version, "release-cell"),
       cell(formatBytes(row.executablePayload)),
-      cell(change === null ? "—" : formatPercent(change), change === null ? "" : change >= 0 ? "delta-positive" : "delta-negative"),
+      cell(change === null ? "—" : formatPercent(change), change === null ? "" : change > 0 ? "delta-regression" : "delta-improvement"),
       cell(selectedTool ? formatBytes(selectedTool.size) : "—"),
       cell(String(row.toolCount)),
       cell(largest ? `${largest.name} · ${formatBytes(largest.size)}` : "—", "binary-cell"),
@@ -797,12 +1191,13 @@ function setRelease(version, synchronize = true) {
   elements.releaseSelect.value = version;
   updateSnapshot();
   updateTable();
+  updateHeatmap();
   if (synchronize) {
     synchronizeComparisonFromTop();
   }
 }
 
-function commonChartOptions(tooltipLabel, onClick, stacked = false) {
+function commonChartOptions(tooltipCallbacks, onClick, stacked = false, axisKind = "bytes") {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -825,15 +1220,67 @@ function commonChartOptions(tooltipLabel, onClick, stacked = false) {
       },
       y: {
         stacked,
-        ...byteAxisOptions(),
+        ...valueAxisOptions(axisKind),
       },
     },
     plugins: {
       legend: { position: "bottom", align: "start" },
-      tooltip: { callbacks: { label: tooltipLabel } },
+      tooltip: {
+        callbacks: typeof tooltipCallbacks === "function"
+          ? { label: tooltipCallbacks }
+          : tooltipCallbacks,
+      },
     },
     layout: { padding: { right: 8 } },
   };
+}
+
+function valueAxisOptions(kind) {
+  const base = {
+    grid: { color: COLORS.grid },
+    border: { display: false },
+    ticks: { maxTicksLimit: 6 },
+  };
+  switch (kind) {
+  case "index":
+    return {
+      ...base,
+      title: axisTitle("Index (first = 100)"),
+      ticks: { ...base.ticks, callback: (value) => Math.round(value) },
+    };
+  case "percent":
+    return {
+      ...base,
+      beginAtZero: true,
+      title: axisTitle("Size change (%)"),
+      ticks: { ...base.ticks, callback: formatAxisPercent },
+    };
+  case "count":
+    return {
+      ...base,
+      beginAtZero: true,
+      ticks: { ...base.ticks, precision: 0 },
+    };
+  default:
+    return byteAxisOptions();
+  }
+}
+
+function axisTitle(text) {
+  return {
+    display: true,
+    text,
+    color: COLORS.inkSoft,
+    font: { family: "IBM Plex Mono", size: 9, weight: "500" },
+    padding: { top: 5 },
+  };
+}
+
+function formatAxisPercent(value) {
+  if (value === 0) {
+    return "0";
+  }
+  return `${value > 0 ? "+" : ""}${Math.round(value)}%`;
 }
 
 function byteAxisOptions(horizontal = false) {
@@ -863,7 +1310,7 @@ function minorVersionLabel(version) {
   return parts.length >= 2 ? `${parts[0]}.${parts[1]}` : version;
 }
 
-function lineDataset(label, data, borderColor, backgroundColor) {
+function lineDataset(label, data, borderColor, backgroundColor, fill = true) {
   return {
     label,
     data,
@@ -878,7 +1325,7 @@ function lineDataset(label, data, borderColor, backgroundColor) {
     pointHoverRadius: 5,
     tension: 0.22,
     spanGaps: false,
-    fill: true,
+    fill,
   };
 }
 
@@ -1077,4 +1524,146 @@ function compareAlphaNumeric(left, right) {
     numeric: true,
     sensitivity: "base",
   });
+}
+
+function updateHeatmap() {
+  const platformKeys = [...new Set(state.releases.flatMap((release) => release.platforms.map(platformKey)))].sort(comparePlatformKeys);
+  const matrix = platformKeys.map((key) => ({
+    key,
+    values: state.releases.map((release) => {
+      const platform = preferredPlatform(release, key);
+      return platform ? sum(platform.tools.map((tool) => tool.size)) : null;
+    }),
+  }));
+  const displayValues = [];
+  for (const row of matrix) {
+    for (let index = 0; index < row.values.length; index += 1) {
+      const value = heatmapValue(row.values, index);
+      if (value !== null) {
+        displayValues.push(value);
+      }
+    }
+  }
+  const low = quantile(displayValues, 0.05);
+  const high = quantile(displayValues, 0.95);
+
+  const grid = document.createElement("div");
+  grid.className = "heatmap__grid";
+  grid.style.setProperty("--release-columns", state.releases.length);
+  grid.append(heatmapCorner());
+  for (const release of state.releases) {
+    const header = document.createElement("span");
+    header.className = "heatmap__column-label";
+    header.textContent = minorVersionLabel(release.version);
+    header.title = release.version;
+    header.setAttribute("role", "columnheader");
+    grid.append(header);
+  }
+
+  for (const row of matrix) {
+    const rowLabel = document.createElement("span");
+    rowLabel.className = "heatmap__row-label";
+    rowLabel.textContent = platformLabel(row.key);
+    rowLabel.setAttribute("role", "rowheader");
+    grid.append(rowLabel);
+    for (let index = 0; index < state.releases.length; index += 1) {
+      const release = state.releases[index];
+      const raw = row.values[index];
+      const display = heatmapValue(row.values, index);
+      if (display === null) {
+        const missing = document.createElement("span");
+        missing.className = "heatmap__cell heatmap__cell--missing";
+        missing.setAttribute("role", "gridcell");
+        missing.setAttribute("aria-label", `${platformLabel(row.key)}, ${release.version}: unavailable`);
+        missing.title = `${platformLabel(row.key)} · ${release.version}\nUnavailable`;
+        grid.append(missing);
+        continue;
+      }
+
+      const cell = document.createElement("button");
+      cell.className = "heatmap__cell";
+      if (row.key === state.platform && release.version === state.release) {
+        cell.classList.add("heatmap__cell--selected");
+      }
+      cell.type = "button";
+      cell.style.backgroundColor = heatmapColor(display, low, high);
+      const valueLabel = state.heatmapMode === "absolute" ? formatBytes(raw) : `Size change: ${formatPercent(display)}`;
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-label", `${platformLabel(row.key)}, ${release.version}: ${valueLabel}`);
+      cell.title = `${platformLabel(row.key)} · ${release.version}\n${valueLabel}`;
+      cell.addEventListener("click", () => selectHeatmapCell(row.key, release.version));
+      grid.append(cell);
+    }
+  }
+
+  elements.heatmap.replaceChildren(grid);
+  updateHeatmapLegend(low, high);
+}
+
+function heatmapCorner() {
+  const corner = document.createElement("span");
+  corner.className = "heatmap__corner";
+  corner.textContent = "Platform";
+  return corner;
+}
+
+function heatmapValue(values, index) {
+  const value = values[index];
+  if (value === null) {
+    return null;
+  }
+  if (state.heatmapMode === "absolute") {
+    return value;
+  }
+  if (index === 0 || values[index - 1] === null) {
+    return null;
+  }
+  return sizeChangePercent(values[index - 1], value);
+}
+
+function heatmapColor(value, low, high) {
+  if (state.heatmapMode === "delta") {
+    const extent = Math.max(Math.abs(low), Math.abs(high), 0.1);
+    const intensity = Math.min(1, Math.abs(value) / extent);
+    const rgb = value < 0 ? [43, 127, 116] : value > 0 ? [212, 130, 24] : [126, 147, 154];
+    return `rgba(${rgb.join(",")},${(0.16 + intensity * 0.78).toFixed(2)})`;
+  }
+  const position = high === low ? 0.5 : Math.max(0, Math.min(1, (value - low) / (high - low)));
+  return `rgba(0,173,216,${(0.14 + position * 0.82).toFixed(2)})`;
+}
+
+function quantile(values, probability) {
+  if (values.length === 0) {
+    return 0;
+  }
+  const sorted = [...values].sort((left, right) => left - right);
+  const position = (sorted.length - 1) * probability;
+  const lower = Math.floor(position);
+  const fraction = position - lower;
+  return sorted[lower + 1] === undefined
+    ? sorted[lower]
+    : sorted[lower] + fraction * (sorted[lower + 1] - sorted[lower]);
+}
+
+function updateHeatmapLegend(low, high) {
+  const lowLabel = state.heatmapMode === "absolute" ? formatBytes(low) : formatPercent(low);
+  const highLabel = state.heatmapMode === "absolute" ? formatBytes(high) : formatPercent(high);
+  elements.heatmapLegend.innerHTML = "";
+  const start = document.createElement("span");
+  start.textContent = lowLabel;
+  const scale = document.createElement("span");
+  scale.className = `heatmap-legend__scale heatmap-legend__scale--${state.heatmapMode}`;
+  const end = document.createElement("span");
+  end.textContent = highLabel;
+  const missing = document.createElement("span");
+  missing.className = "heatmap-legend__missing";
+  missing.textContent = "Unavailable";
+  elements.heatmapLegend.append(start, scale, end, missing);
+}
+
+function selectHeatmapCell(platform, release) {
+  state.platform = platform;
+  state.release = release;
+  elements.platformSelect.value = platform;
+  updatePlatform();
 }

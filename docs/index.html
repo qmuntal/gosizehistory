@@ -91,22 +91,22 @@
 
     <section id="metricGrid" class="metric-grid" aria-label="Selected platform summary" hidden>
       <article class="metric metric--gopher">
-        <p>Latest footprint</p>
-        <strong id="latestFootprint">—</strong>
-        <span id="latestRelease">—</span>
+        <p>Tip vs latest stable</p>
+        <strong id="tipSizeChange">—</strong>
+        <span id="tipSizeChangeContext">—</span>
       </article>
       <article class="metric metric--amber">
-        <p>Change since first</p>
-        <strong id="footprintChange">—</strong>
-        <span id="firstRelease">—</span>
+        <p>Latest stable change</p>
+        <strong id="stableSizeChange">—</strong>
+        <span id="stableSizeChangeContext">—</span>
       </article>
       <article class="metric metric--graphite">
-        <p>Peak footprint</p>
-        <strong id="peakFootprint">—</strong>
-        <span id="peakRelease">—</span>
+        <p>Largest stable jump</p>
+        <strong id="largestJump">—</strong>
+        <span id="largestJumpContext">—</span>
       </article>
       <article class="metric metric--teal">
-        <p>Release coverage</p>
+        <p>Platform coverage</p>
         <strong id="releaseCoverage">—</strong>
         <span id="releaseCount">—</span>
       </article>
@@ -117,10 +117,18 @@
         <header class="panel__header">
           <div>
             <p class="eyebrow">Toolchain</p>
-            <h2>Executable footprint over time</h2>
+            <h2 id="trendChartTitle">Executable footprint over time</h2>
           </div>
-          <span id="trendTarget" class="panel__context">—</span>
+          <div class="panel__tools">
+            <span id="trendTarget" class="panel__context">—</span>
+            <div class="segmented segmented--compact segmented--three" role="group" aria-label="Trend view">
+              <button class="segmented__button" type="button" data-trend-mode="absolute" aria-pressed="true">Absolute</button>
+              <button class="segmented__button" type="button" data-trend-mode="indexed" aria-pressed="false">Indexed</button>
+              <button class="segmented__button" type="button" data-trend-mode="delta" aria-pressed="false">Δ prior</button>
+            </div>
+          </div>
         </header>
+        <p id="trendNote" class="panel__note">Gaps indicate an unavailable platform.</p>
         <div class="chart-frame chart-frame--large">
           <canvas id="footprintChart" role="img" aria-label="Total shipped executable size by Go release"></canvas>
         </div>
@@ -134,6 +142,7 @@
           </div>
           <span id="toolCoverage" class="panel__context">—</span>
         </header>
+        <p id="toolNote" class="panel__note">Gaps indicate the binary was not shipped.</p>
         <div class="chart-frame chart-frame--large">
           <canvas id="toolChart" role="img" aria-label="Selected tool size by Go release"></canvas>
         </div>
@@ -189,24 +198,55 @@
           </section>
         </div>
 
-        <div class="comparison-body">
-          <div class="chart-frame chart-frame--compare">
-            <canvas id="comparisonChart" role="img" aria-label="Largest binaries compared side by side"></canvas>
-          </div>
-          <div class="compare-table-wrap">
-            <table class="compare-table">
-              <thead>
-                <tr>
-                  <th scope="col">Binary</th>
-                  <th scope="col" id="compareTableLeft">A</th>
-                  <th scope="col" id="compareTableRight">B</th>
-                  <th id="compareDeltaHeader" scope="col">Delta</th>
-                </tr>
-              </thead>
-              <tbody id="compareTable"></tbody>
-            </table>
-          </div>
+        <div class="comparison-charts">
+          <section class="comparison-chart">
+            <header>
+              <h3>Binary contributions</h3>
+              <span id="comparisonAxisNote">− smaller · + larger</span>
+            </header>
+            <div class="chart-frame chart-frame--compare">
+              <canvas id="comparisonChart" role="img" aria-label="Diverging binary footprint contributions"></canvas>
+            </div>
+          </section>
+          <section class="comparison-chart">
+            <header>
+              <h3>Footprint bridge</h3>
+              <span>How A becomes B</span>
+            </header>
+            <div class="chart-frame chart-frame--waterfall">
+              <canvas id="waterfallChart" role="img" aria-label="Waterfall of binary changes between selections"></canvas>
+            </div>
+          </section>
         </div>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th scope="col">Binary</th>
+                <th scope="col" id="compareTableLeft">A</th>
+                <th scope="col" id="compareTableRight">B</th>
+                <th id="compareDeltaHeader" scope="col">Delta</th>
+              </tr>
+            </thead>
+            <tbody id="compareTable"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel panel--heatmap">
+        <header class="panel__header">
+          <div>
+            <p class="eyebrow">Coverage map</p>
+            <h2>Platform × release</h2>
+          </div>
+          <div class="segmented segmented--compact" role="group" aria-label="Heatmap metric">
+            <button class="segmented__button" type="button" data-heatmap-mode="absolute" aria-pressed="true">Footprint</button>
+            <button class="segmented__button" type="button" data-heatmap-mode="delta" aria-pressed="false">Δ prior</button>
+          </div>
+        </header>
+        <p class="panel__note">Gray cells are unavailable. Select a cell to update Platform and Snapshot.</p>
+        <div id="heatmapLegend" class="heatmap-legend" aria-hidden="true"></div>
+        <div id="heatmap" class="heatmap" role="grid" aria-label="Platform and release footprint heatmap"></div>
       </article>
 
       <article class="panel panel--snapshot">
@@ -249,7 +289,7 @@
               <tr>
                 <th scope="col">Release</th>
                 <th scope="col">Executables</th>
-                <th scope="col">Change</th>
+                <th scope="col">Size change</th>
                 <th scope="col" id="toolColumnHeader">Selected tool</th>
                 <th scope="col">Binaries</th>
                 <th scope="col">Largest binary</th>
