@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-08-29T05:05:35.097067721Z",
+  "generated_at": "2026-08-30T05:07:38.50048137Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "da7c67f59526a02ef22f80fe91fd2960a6547e59",
-      "commit_time": "2026-08-28T21:42:09Z",
+      "revision": "603439a1c6f2d37c7f02e246342847056ed04c21",
+      "commit_time": "2026-08-29T04:44:26Z",
       "platforms": [
         {
           "os": "aix",
@@ -56304,7 +56304,7 @@
               "name": "link",
               "path": "go/pkg/tool/linux_riscv64/link",
               "category": "tool",
-              "size": 6419309
+              "size": 6419377
             },
             {
               "name": "preprofile",
@@ -56988,7 +56988,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15067018
+              "size": 15132610
             },
             {
               "name": "gofmt",
@@ -57030,7 +57030,7 @@
               "name": "link",
               "path": "go/pkg/tool/openbsd_riscv64/link",
               "category": "tool",
-              "size": 6284104
+              "size": 6284186
             },
             {
               "name": "preprofile",
