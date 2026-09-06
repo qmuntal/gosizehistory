@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-05T04:57:29.42647468Z",
+  "generated_at": "2026-09-06T05:06:26.181395672Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "714d9afb66994e987aa715e088279e75efcec315",
-      "commit_time": "2026-09-04T23:27:59Z",
+      "revision": "38d1265e1a015add1d0b8651f5c2ea3f06199765",
+      "commit_time": "2026-09-05T22:11:17Z",
       "platforms": [
         {
           "os": "aix",
@@ -54942,7 +54942,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18232901
+              "size": 18235341
             },
             {
               "name": "gofmt",
@@ -55008,7 +55008,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 17103712
+              "size": 17108032
             },
             {
               "name": "gofmt",
@@ -55074,7 +55074,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15888034
+              "size": 15888274
             },
             {
               "name": "gofmt",
@@ -55140,7 +55140,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16815222
+              "size": 16819492
             },
             {
               "name": "gofmt",
@@ -55206,7 +55206,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16146040
+              "size": 16150286
             },
             {
               "name": "gofmt",
@@ -55272,7 +55272,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16838388
+              "size": 16842658
             },
             {
               "name": "gofmt",
@@ -55338,7 +55338,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16466788
+              "size": 16466938
             },
             {
               "name": "gofmt",
@@ -55404,7 +55404,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15575194
+              "size": 15575368
             },
             {
               "name": "gofmt",
@@ -55470,7 +55470,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16777180
+              "size": 16781450
             },
             {
               "name": "gofmt",
@@ -55536,7 +55536,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16332246
+              "size": 16332396
             },
             {
               "name": "gofmt",
@@ -55602,7 +55602,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16910349
+              "size": 16914619
             },
             {
               "name": "gofmt",
@@ -55668,7 +55668,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16473801
+              "size": 16473951
             },
             {
               "name": "gofmt",
@@ -55734,7 +55734,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15582508
+              "size": 15582682
             },
             {
               "name": "gofmt",
@@ -55800,7 +55800,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16630536
+              "size": 16630710
             },
             {
               "name": "gofmt",
@@ -55866,7 +55866,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18232372
+              "size": 18232522
             },
             {
               "name": "gofmt",
@@ -55932,7 +55932,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18943918
+              "size": 19009628
             },
             {
               "name": "gofmt",
@@ -55998,7 +55998,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18943987
+              "size": 18944161
             },
             {
               "name": "gofmt",
@@ -56064,7 +56064,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18232274
+              "size": 18232424
             },
             {
               "name": "gofmt",
@@ -56130,7 +56130,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16740598
+              "size": 16740772
             },
             {
               "name": "gofmt",
@@ -56196,7 +56196,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16737800
+              "size": 16737974
             },
             {
               "name": "gofmt",
@@ -56262,7 +56262,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15046453
+              "size": 15046627
             },
             {
               "name": "gofmt",
@@ -56328,7 +56328,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 17662847
+              "size": 17663021
             },
             {
               "name": "gofmt",
@@ -56394,7 +56394,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16118943
+              "size": 16123189
             },
             {
               "name": "gofmt",
@@ -56460,7 +56460,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16810221
+              "size": 16814491
             },
             {
               "name": "gofmt",
@@ -56526,7 +56526,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16333345
+              "size": 16399031
             },
             {
               "name": "gofmt",
@@ -56592,7 +56592,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15572317
+              "size": 15572491
             },
             {
               "name": "gofmt",
@@ -56658,7 +56658,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16090583
+              "size": 16090733
             },
             {
               "name": "gofmt",
@@ -56724,7 +56724,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16792159
+              "size": 16792333
             },
             {
               "name": "gofmt",
@@ -56790,7 +56790,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16337786
+              "size": 16337936
             },
             {
               "name": "gofmt",
@@ -56856,7 +56856,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15513554
+              "size": 15513728
             },
             {
               "name": "gofmt",
@@ -56922,7 +56922,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16675124
+              "size": 16675298
             },
             {
               "name": "gofmt",
@@ -56988,7 +56988,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 14980907
+              "size": 14981081
             },
             {
               "name": "gofmt",
@@ -57054,7 +57054,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15698362
+              "size": 15700459
             },
             {
               "name": "gofmt",
@@ -57120,7 +57120,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16389005
+              "size": 16391214
             },
             {
               "name": "gofmt",
@@ -57186,7 +57186,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15804839
+              "size": 15806952
             },
             {
               "name": "gofmt",
@@ -57252,7 +57252,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16785735
+              "size": 16785909
             },
             {
               "name": "gofmt",
@@ -57318,7 +57318,7 @@
               "name": "go",
               "path": "go/bin/go.exe",
               "category": "command",
-              "size": 16868352
+              "size": 16870400
             },
             {
               "name": "gofmt",
@@ -57384,7 +57384,7 @@
               "name": "go",
               "path": "go/bin/go.exe",
               "category": "command",
-              "size": 17272832
+              "size": 17274880
             },
             {
               "name": "gofmt",
@@ -57450,7 +57450,7 @@
               "name": "go",
               "path": "go/bin/go.exe",
               "category": "command",
-              "size": 15739392
+              "size": 15741952
             },
             {
               "name": "gofmt",
