@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-12T05:05:20.218178096Z",
+  "generated_at": "2026-09-13T04:59:05.356489689Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "fdcd66bb544d230a7eb0c2512e9e7a6ab191388b",
-      "commit_time": "2026-09-12T03:29:13Z",
+      "revision": "9834516e20a2faf20fb599bf678545d134c6a372",
+      "commit_time": "2026-09-12T15:23:11Z",
       "platforms": [
         {
           "os": "aix",
