@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-13T04:59:05.356489689Z",
+  "generated_at": "2026-09-14T05:11:16.776582193Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "9834516e20a2faf20fb599bf678545d134c6a372",
-      "commit_time": "2026-09-12T15:23:11Z",
+      "revision": "bddf824b8fa1e0d5b9e3b669c74a09e48e50e9a9",
+      "commit_time": "2026-09-13T17:46:36Z",
       "platforms": [
         {
           "os": "aix",
@@ -57054,7 +57054,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15629590
+              "size": 15627210
             },
             {
               "name": "gofmt",
@@ -57120,7 +57120,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16300386
+              "size": 16297962
             },
             {
               "name": "gofmt",
@@ -57186,7 +57186,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15741491
+              "size": 15739295
             },
             {
               "name": "gofmt",
