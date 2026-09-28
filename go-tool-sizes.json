@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-27T05:01:47.427045982Z",
+  "generated_at": "2026-09-28T05:13:46.854848785Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "2ff5743d9fd52fac166225e75df0c2c1edf82abb",
-      "commit_time": "2026-09-26T22:27:19Z",
+      "revision": "8360c0d8c0c316d82e5ae873189be80052ed2b26",
+      "commit_time": "2026-09-28T01:42:52Z",
       "platforms": [
         {
           "os": "aix",
@@ -54954,7 +54954,7 @@
               "name": "asm",
               "path": "go/pkg/tool/aix_ppc64/asm",
               "category": "tool",
-              "size": 5972289
+              "size": 5972033
             },
             {
               "name": "cgo",
@@ -54966,7 +54966,7 @@
               "name": "compile",
               "path": "go/pkg/tool/aix_ppc64/compile",
               "category": "tool",
-              "size": 31176106
+              "size": 31175850
             },
             {
               "name": "cover",
@@ -54984,7 +54984,7 @@
               "name": "link",
               "path": "go/pkg/tool/aix_ppc64/link",
               "category": "tool",
-              "size": 7982210
+              "size": 7981954
             },
             {
               "name": "preprofile",
@@ -55284,7 +55284,7 @@
               "name": "asm",
               "path": "go/pkg/tool/freebsd_amd64/asm",
               "category": "tool",
-              "size": 5146106
+              "size": 5142010
             },
             {
               "name": "cgo",
@@ -55296,7 +55296,7 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_amd64/compile",
               "category": "tool",
-              "size": 27656495
+              "size": 27652399
             },
             {
               "name": "cover",
@@ -56748,7 +56748,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_amd64/compile",
               "category": "tool",
-              "size": 27635672
+              "size": 27631576
             },
             {
               "name": "cover",
@@ -56766,7 +56766,7 @@
               "name": "link",
               "path": "go/pkg/tool/openbsd_amd64/link",
               "category": "tool",
-              "size": 7209472
+              "size": 7205376
             },
             {
               "name": "preprofile",
@@ -57066,7 +57066,7 @@
               "name": "asm",
               "path": "go/pkg/tool/plan9_386/asm",
               "category": "tool",
-              "size": 4573366
+              "size": 4573062
             },
             {
               "name": "cgo",
@@ -57078,7 +57078,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_386/compile",
               "category": "tool",
-              "size": 25785071
+              "size": 25784807
             },
             {
               "name": "cover",
@@ -57096,7 +57096,7 @@
               "name": "link",
               "path": "go/pkg/tool/plan9_386/link",
               "category": "tool",
-              "size": 6774880
+              "size": 6774608
             },
             {
               "name": "preprofile",
@@ -57120,7 +57120,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16274290
+              "size": 16274282
             },
             {
               "name": "gofmt",
@@ -57132,25 +57132,25 @@
               "name": "asm",
               "path": "go/pkg/tool/plan9_amd64/asm",
               "category": "tool",
-              "size": 4901337
+              "size": 4900969
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/plan9_amd64/cgo",
               "category": "tool",
-              "size": 3866586
+              "size": 3866578
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/plan9_amd64/compile",
               "category": "tool",
-              "size": 27349763
+              "size": 27349363
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/plan9_amd64/cover",
               "category": "tool",
-              "size": 5131768
+              "size": 5131760
             },
             {
               "name": "fix",
@@ -57162,7 +57162,7 @@
               "name": "link",
               "path": "go/pkg/tool/plan9_amd64/link",
               "category": "tool",
-              "size": 7032184
+              "size": 7031824
             },
             {
               "name": "preprofile",
@@ -57198,7 +57198,7 @@
               "name": "asm",
               "path": "go/pkg/tool/plan9_arm/asm",
               "category": "tool",
-              "size": 4819415
+              "size": 4819127
             },
             {
               "name": "cgo",
@@ -57210,7 +57210,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_arm/compile",
               "category": "tool",
-              "size": 26508353
+              "size": 26508057
             },
             {
               "name": "cover",
@@ -57228,7 +57228,7 @@
               "name": "link",
               "path": "go/pkg/tool/plan9_arm/link",
               "category": "tool",
-              "size": 6902911
+              "size": 6902615
             },
             {
               "name": "preprofile",
@@ -57330,7 +57330,7 @@
               "name": "asm",
               "path": "go/pkg/tool/windows_386/asm.exe",
               "category": "tool",
-              "size": 5301760
+              "size": 5300736
             },
             {
               "name": "cgo",
@@ -57360,7 +57360,7 @@
               "name": "link",
               "path": "go/pkg/tool/windows_386/link.exe",
               "category": "tool",
-              "size": 7598592
+              "size": 7599104
             },
             {
               "name": "preprofile",
@@ -57396,7 +57396,7 @@
               "name": "asm",
               "path": "go/pkg/tool/windows_amd64/asm.exe",
               "category": "tool",
-              "size": 5466112
+              "size": 5465088
             },
             {
               "name": "cgo",
@@ -57408,7 +57408,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_amd64/compile.exe",
               "category": "tool",
-              "size": 28217856
+              "size": 28216832
             },
             {
               "name": "cover",
@@ -57426,7 +57426,7 @@
               "name": "link",
               "path": "go/pkg/tool/windows_amd64/link.exe",
               "category": "tool",
-              "size": 7646208
+              "size": 7645696
             },
             {
               "name": "preprofile",
@@ -57462,7 +57462,7 @@
               "name": "asm",
               "path": "go/pkg/tool/windows_arm64/asm.exe",
               "category": "tool",
-              "size": 5233664
+              "size": 5232640
             },
             {
               "name": "cgo",
@@ -57474,7 +57474,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_arm64/compile.exe",
               "category": "tool",
-              "size": 26593792
+              "size": 26593280
             },
             {
               "name": "cover",
@@ -57492,7 +57492,7 @@
               "name": "link",
               "path": "go/pkg/tool/windows_arm64/link.exe",
               "category": "tool",
-              "size": 7100416
+              "size": 7099392
             },
             {
               "name": "preprofile",
