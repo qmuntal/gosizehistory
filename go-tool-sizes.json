@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-28T05:13:46.854848785Z",
+  "generated_at": "2026-09-29T05:12:48.076882797Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "8360c0d8c0c316d82e5ae873189be80052ed2b26",
-      "commit_time": "2026-09-28T01:42:52Z",
+      "revision": "38f24c5c4659b7b8f468e5a2544412e9532e55e9",
+      "commit_time": "2026-09-29T01:25:06Z",
       "platforms": [
         {
           "os": "aix",
@@ -54942,61 +54942,61 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18140300
+              "size": 18152852
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 3303287
+              "size": 3303495
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/aix_ppc64/asm",
               "category": "tool",
-              "size": 5972033
+              "size": 5972113
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/aix_ppc64/cgo",
               "category": "tool",
-              "size": 4541724
+              "size": 4542060
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/aix_ppc64/compile",
               "category": "tool",
-              "size": 31175850
+              "size": 31173886
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/aix_ppc64/cover",
               "category": "tool",
-              "size": 5991632
+              "size": 6003912
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/aix_ppc64/fix",
               "category": "tool",
-              "size": 9385650
+              "size": 9385922
             },
             {
               "name": "link",
               "path": "go/pkg/tool/aix_ppc64/link",
               "category": "tool",
-              "size": 7981954
+              "size": 7982162
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/aix_ppc64/preprofile",
               "category": "tool",
-              "size": 2527711
+              "size": 2530675
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/aix_ppc64/vet",
               "category": "tool",
-              "size": 9087204
+              "size": 9087348
             }
           ]
         },
@@ -55008,13 +55008,13 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16995056
+              "size": 17004992
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 3045120
+              "size": 3045136
             },
             {
               "name": "asm",
@@ -55026,37 +55026,37 @@
               "name": "cgo",
               "path": "go/pkg/tool/darwin_amd64/cgo",
               "category": "tool",
-              "size": 4186096
+              "size": 4186112
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/darwin_amd64/compile",
               "category": "tool",
-              "size": 28099072
+              "size": 28099120
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/darwin_amd64/cover",
               "category": "tool",
-              "size": 5520096
+              "size": 5530048
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/darwin_amd64/fix",
               "category": "tool",
-              "size": 8973856
+              "size": 8973872
             },
             {
               "name": "link",
               "path": "go/pkg/tool/darwin_amd64/link",
               "category": "tool",
-              "size": 7361600
+              "size": 7361616
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/darwin_amd64/preprofile",
               "category": "tool",
-              "size": 2335328
+              "size": 2335392
             },
             {
               "name": "vet",
@@ -55074,13 +55074,13 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15799186
+              "size": 15817426
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 2903826
+              "size": 2903842
             },
             {
               "name": "asm",
@@ -55098,13 +55098,13 @@
               "name": "compile",
               "path": "go/pkg/tool/darwin_arm64/compile",
               "category": "tool",
-              "size": 26910242
+              "size": 26910306
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/darwin_arm64/cover",
               "category": "tool",
-              "size": 5257858
+              "size": 5259650
             },
             {
               "name": "fix",
@@ -55116,19 +55116,19 @@
               "name": "link",
               "path": "go/pkg/tool/darwin_arm64/link",
               "category": "tool",
-              "size": 6956754
+              "size": 6956770
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/darwin_arm64/preprofile",
               "category": "tool",
-              "size": 2238354
+              "size": 2238418
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/darwin_arm64/vet",
               "category": "tool",
-              "size": 8196578
+              "size": 8196594
             }
           ]
         },
@@ -55140,7 +55140,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16706286
+              "size": 16716106
             },
             {
               "name": "gofmt",
@@ -55164,13 +55164,13 @@
               "name": "compile",
               "path": "go/pkg/tool/dragonfly_amd64/compile",
               "category": "tool",
-              "size": 27637531
+              "size": 27637589
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/dragonfly_amd64/cover",
               "category": "tool",
-              "size": 5415654
+              "size": 5425474
             },
             {
               "name": "fix",
@@ -55188,7 +55188,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/dragonfly_amd64/preprofile",
               "category": "tool",
-              "size": 2252829
+              "size": 2256983
             },
             {
               "name": "vet",
@@ -55206,7 +55206,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16037895
+              "size": 16047555
             },
             {
               "name": "gofmt",
@@ -55230,13 +55230,13 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_386/compile",
               "category": "tool",
-              "size": 26214711
+              "size": 26210665
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/freebsd_386/cover",
               "category": "tool",
-              "size": 5008474
+              "size": 5018134
             },
             {
               "name": "fix",
@@ -55254,7 +55254,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/freebsd_386/preprofile",
               "category": "tool",
-              "size": 2105062
+              "size": 2105112
             },
             {
               "name": "vet",
@@ -55272,7 +55272,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16729493
+              "size": 16739313
             },
             {
               "name": "gofmt",
@@ -55284,7 +55284,7 @@
               "name": "asm",
               "path": "go/pkg/tool/freebsd_amd64/asm",
               "category": "tool",
-              "size": 5142010
+              "size": 5146106
             },
             {
               "name": "cgo",
@@ -55296,13 +55296,13 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_amd64/compile",
               "category": "tool",
-              "size": 27652399
+              "size": 27652457
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/freebsd_amd64/cover",
               "category": "tool",
-              "size": 5430522
+              "size": 5444438
             },
             {
               "name": "fix",
@@ -55320,7 +55320,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/freebsd_amd64/preprofile",
               "category": "tool",
-              "size": 2267466
+              "size": 2271620
             },
             {
               "name": "vet",
@@ -55338,7 +55338,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16330005
+              "size": 16331473
             },
             {
               "name": "gofmt",
@@ -55362,13 +55362,13 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_arm/compile",
               "category": "tool",
-              "size": 27102394
+              "size": 27102444
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/freebsd_arm/cover",
               "category": "tool",
-              "size": 5275575
+              "size": 5277043
             },
             {
               "name": "fix",
@@ -55386,7 +55386,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/freebsd_arm/preprofile",
               "category": "tool",
-              "size": 2230553
+              "size": 2230603
             },
             {
               "name": "vet",
@@ -55404,7 +55404,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15437608
+              "size": 15439236
             },
             {
               "name": "gofmt",
@@ -55428,13 +55428,13 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_arm64/compile",
               "category": "tool",
-              "size": 26346193
+              "size": 26346251
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/freebsd_arm64/cover",
               "category": "tool",
-              "size": 5202419
+              "size": 5269583
             },
             {
               "name": "fix",
@@ -55452,7 +55452,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/freebsd_arm64/preprofile",
               "category": "tool",
-              "size": 2187031
+              "size": 2187089
             },
             {
               "name": "vet",
@@ -55470,7 +55470,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16668165
+              "size": 16677985
             },
             {
               "name": "gofmt",
@@ -55488,19 +55488,19 @@
               "name": "cgo",
               "path": "go/pkg/tool/illumos_amd64/cgo",
               "category": "tool",
-              "size": 4066827
+              "size": 4070923
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/illumos_amd64/compile",
               "category": "tool",
-              "size": 27650212
+              "size": 27646174
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/illumos_amd64/cover",
               "category": "tool",
-              "size": 5415402
+              "size": 5429318
             },
             {
               "name": "fix",
@@ -55518,7 +55518,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/illumos_amd64/preprofile",
               "category": "tool",
-              "size": 2207459
+              "size": 2211613
             },
             {
               "name": "vet",
@@ -55536,7 +55536,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16220142
+              "size": 16229802
             },
             {
               "name": "gofmt",
@@ -55560,13 +55560,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_386/compile",
               "category": "tool",
-              "size": 26443881
+              "size": 26443931
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_386/cover",
               "category": "tool",
-              "size": 5143289
+              "size": 5152949
             },
             {
               "name": "fix",
@@ -55584,7 +55584,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_386/preprofile",
               "category": "tool",
-              "size": 2162142
+              "size": 2166288
             },
             {
               "name": "vet",
@@ -55602,7 +55602,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16801607
+              "size": 16811427
             },
             {
               "name": "gofmt",
@@ -55626,13 +55626,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_amd64/compile",
               "category": "tool",
-              "size": 27743180
+              "size": 27739142
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_amd64/cover",
               "category": "tool",
-              "size": 5516982
+              "size": 5530898
             },
             {
               "name": "fix",
@@ -55650,7 +55650,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_amd64/preprofile",
               "category": "tool",
-              "size": 2308371
+              "size": 2308429
             },
             {
               "name": "vet",
@@ -55668,7 +55668,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16468227
+              "size": 16469695
             },
             {
               "name": "gofmt",
@@ -55692,13 +55692,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_arm/compile",
               "category": "tool",
-              "size": 27504696
+              "size": 27504746
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_arm/cover",
               "category": "tool",
-              "size": 5284386
+              "size": 5285854
             },
             {
               "name": "fix",
@@ -55716,7 +55716,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_arm/preprofile",
               "category": "tool",
-              "size": 2366338
+              "size": 2366388
             },
             {
               "name": "vet",
@@ -55734,7 +55734,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15576147
+              "size": 15577775
             },
             {
               "name": "gofmt",
@@ -55758,13 +55758,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_arm64/compile",
               "category": "tool",
-              "size": 26421361
+              "size": 26421419
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_arm64/cover",
               "category": "tool",
-              "size": 5277362
+              "size": 5278990
             },
             {
               "name": "fix",
@@ -55782,7 +55782,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_arm64/preprofile",
               "category": "tool",
-              "size": 2257379
+              "size": 2257437
             },
             {
               "name": "vet",
@@ -55800,7 +55800,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16559957
+              "size": 16627121
             },
             {
               "name": "gofmt",
@@ -55824,13 +55824,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_loong64/compile",
               "category": "tool",
-              "size": 28057022
+              "size": 28057080
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_loong64/cover",
               "category": "tool",
-              "size": 5601644
+              "size": 5603272
             },
             {
               "name": "fix",
@@ -55848,7 +55848,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_loong64/preprofile",
               "category": "tool",
-              "size": 2322392
+              "size": 2322450
             },
             {
               "name": "vet",
@@ -55866,7 +55866,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18161271
+              "size": 18228275
             },
             {
               "name": "gofmt",
@@ -55890,13 +55890,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mips/compile",
               "category": "tool",
-              "size": 30575439
+              "size": 30575489
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_mips/cover",
               "category": "tool",
-              "size": 5929741
+              "size": 5931209
             },
             {
               "name": "fix",
@@ -55914,7 +55914,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_mips/preprofile",
               "category": "tool",
-              "size": 2421302
+              "size": 2421352
             },
             {
               "name": "vet",
@@ -55932,7 +55932,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18872116
+              "size": 18873744
             },
             {
               "name": "gofmt",
@@ -55956,13 +55956,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mips64/compile",
               "category": "tool",
-              "size": 32340386
+              "size": 32340444
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_mips64/cover",
               "category": "tool",
-              "size": 6199014
+              "size": 6266178
             },
             {
               "name": "fix",
@@ -55980,7 +55980,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_mips64/preprofile",
               "category": "tool",
-              "size": 2717718
+              "size": 2717776
             },
             {
               "name": "vet",
@@ -55998,7 +55998,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18872185
+              "size": 18873813
             },
             {
               "name": "gofmt",
@@ -56022,13 +56022,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mips64le/compile",
               "category": "tool",
-              "size": 32341667
+              "size": 32341725
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_mips64le/cover",
               "category": "tool",
-              "size": 6199107
+              "size": 6266271
             },
             {
               "name": "fix",
@@ -56046,7 +56046,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_mips64le/preprofile",
               "category": "tool",
-              "size": 2717811
+              "size": 2717869
             },
             {
               "name": "vet",
@@ -56064,7 +56064,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 18161173
+              "size": 18162641
             },
             {
               "name": "gofmt",
@@ -56088,13 +56088,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mipsle/compile",
               "category": "tool",
-              "size": 30575395
+              "size": 30575445
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_mipsle/cover",
               "category": "tool",
-              "size": 5929697
+              "size": 5931165
             },
             {
               "name": "fix",
@@ -56112,7 +56112,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_mipsle/preprofile",
               "category": "tool",
-              "size": 2421266
+              "size": 2421316
             },
             {
               "name": "vet",
@@ -56130,7 +56130,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16603074
+              "size": 16670238
             },
             {
               "name": "gofmt",
@@ -56154,13 +56154,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_ppc64/compile",
               "category": "tool",
-              "size": 28076563
+              "size": 28076897
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_ppc64/cover",
               "category": "tool",
-              "size": 5611298
+              "size": 5612926
             },
             {
               "name": "fix",
@@ -56178,7 +56178,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_ppc64/preprofile",
               "category": "tool",
-              "size": 2326863
+              "size": 2392733
             },
             {
               "name": "vet",
@@ -56196,7 +56196,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16600276
+              "size": 16601904
             },
             {
               "name": "gofmt",
@@ -56220,13 +56220,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_ppc64le/compile",
               "category": "tool",
-              "size": 28076103
+              "size": 28076437
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_ppc64le/cover",
               "category": "tool",
-              "size": 5610945
+              "size": 5612573
             },
             {
               "name": "fix",
@@ -56244,7 +56244,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_ppc64le/preprofile",
               "category": "tool",
-              "size": 2392361
+              "size": 2392695
             },
             {
               "name": "vet",
@@ -56262,7 +56262,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 14708513
+              "size": 14710190
             },
             {
               "name": "gofmt",
@@ -56286,13 +56286,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_riscv64/compile",
               "category": "tool",
-              "size": 24927522
+              "size": 24927504
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_riscv64/cover",
               "category": "tool",
-              "size": 4894481
+              "size": 4961718
             },
             {
               "name": "fix",
@@ -56310,7 +56310,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_riscv64/preprofile",
               "category": "tool",
-              "size": 2061966
+              "size": 2062024
             },
             {
               "name": "vet",
@@ -56328,7 +56328,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 17458987
+              "size": 17460615
             },
             {
               "name": "gofmt",
@@ -56352,13 +56352,13 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_s390x/compile",
               "category": "tool",
-              "size": 29653452
+              "size": 29588250
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/linux_s390x/cover",
               "category": "tool",
-              "size": 5809449
+              "size": 5811077
             },
             {
               "name": "fix",
@@ -56376,7 +56376,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/linux_s390x/preprofile",
               "category": "tool",
-              "size": 2456709
+              "size": 2457043
             },
             {
               "name": "vet",
@@ -56394,7 +56394,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16006702
+              "size": 16020458
             },
             {
               "name": "gofmt",
@@ -56418,13 +56418,13 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_386/compile",
               "category": "tool",
-              "size": 26200986
+              "size": 26196940
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/netbsd_386/cover",
               "category": "tool",
-              "size": 4994749
+              "size": 5004409
             },
             {
               "name": "fix",
@@ -56442,7 +56442,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/netbsd_386/preprofile",
               "category": "tool",
-              "size": 2083390
+              "size": 2091632
             },
             {
               "name": "vet",
@@ -56460,7 +56460,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16697230
+              "size": 16711146
             },
             {
               "name": "gofmt",
@@ -56484,13 +56484,13 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_amd64/compile",
               "category": "tool",
-              "size": 27637810
+              "size": 27637868
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/netbsd_amd64/cover",
               "category": "tool",
-              "size": 5415933
+              "size": 5425753
             },
             {
               "name": "fix",
@@ -56508,7 +56508,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/netbsd_amd64/preprofile",
               "category": "tool",
-              "size": 2253151
+              "size": 2257305
             },
             {
               "name": "vet",
@@ -56526,7 +56526,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16327634
+              "size": 16329102
             },
             {
               "name": "gofmt",
@@ -56550,13 +56550,13 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_arm/compile",
               "category": "tool",
-              "size": 27101107
+              "size": 27101157
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/netbsd_arm/cover",
               "category": "tool",
-              "size": 5143216
+              "size": 5210220
             },
             {
               "name": "fix",
@@ -56574,7 +56574,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/netbsd_arm/preprofile",
               "category": "tool",
-              "size": 2229511
+              "size": 2229561
             },
             {
               "name": "vet",
@@ -56592,7 +56592,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15434731
+              "size": 15436359
             },
             {
               "name": "gofmt",
@@ -56616,13 +56616,13 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_arm64/compile",
               "category": "tool",
-              "size": 26279070
+              "size": 26279128
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/netbsd_arm64/cover",
               "category": "tool",
-              "size": 5200832
+              "size": 5202460
             },
             {
               "name": "fix",
@@ -56640,13 +56640,13 @@
               "name": "preprofile",
               "path": "go/pkg/tool/netbsd_arm64/preprofile",
               "category": "tool",
-              "size": 2185764
+              "size": 2185822
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/netbsd_arm64/vet",
               "category": "tool",
-              "size": 7863657
+              "size": 7798121
             }
           ]
         },
@@ -56658,7 +56658,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15978279
+              "size": 15987939
             },
             {
               "name": "gofmt",
@@ -56676,19 +56676,19 @@
               "name": "cgo",
               "path": "go/pkg/tool/openbsd_386/cgo",
               "category": "tool",
-              "size": 3767374
+              "size": 3771470
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/openbsd_386/compile",
               "category": "tool",
-              "size": 26193011
+              "size": 26193061
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/openbsd_386/cover",
               "category": "tool",
-              "size": 4973852
+              "size": 4983512
             },
             {
               "name": "fix",
@@ -56706,7 +56706,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/openbsd_386/preprofile",
               "category": "tool",
-              "size": 2030810
+              "size": 2030860
             },
             {
               "name": "vet",
@@ -56724,7 +56724,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16683185
+              "size": 16693005
             },
             {
               "name": "gofmt",
@@ -56748,13 +56748,13 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_amd64/compile",
               "category": "tool",
-              "size": 27631576
+              "size": 27631634
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/openbsd_amd64/cover",
               "category": "tool",
-              "size": 5396598
+              "size": 5406418
             },
             {
               "name": "fix",
@@ -56772,7 +56772,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/openbsd_amd64/preprofile",
               "category": "tool",
-              "size": 2197090
+              "size": 2197148
             },
             {
               "name": "vet",
@@ -56790,7 +56790,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16266476
+              "size": 16267944
             },
             {
               "name": "gofmt",
@@ -56814,13 +56814,13 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_arm/compile",
               "category": "tool",
-              "size": 27039917
+              "size": 27039967
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/openbsd_arm/cover",
               "category": "tool",
-              "size": 5146928
+              "size": 5148396
             },
             {
               "name": "fix",
@@ -56838,7 +56838,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/openbsd_arm/preprofile",
               "category": "tool",
-              "size": 2164798
+              "size": 2164848
             },
             {
               "name": "vet",
@@ -56856,7 +56856,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15506961
+              "size": 15508589
             },
             {
               "name": "gofmt",
@@ -56880,13 +56880,13 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_arm64/compile",
               "category": "tool",
-              "size": 26285420
+              "size": 26285478
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/openbsd_arm64/cover",
               "category": "tool",
-              "size": 5140833
+              "size": 5207997
             },
             {
               "name": "fix",
@@ -56904,7 +56904,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/openbsd_arm64/preprofile",
               "category": "tool",
-              "size": 2187343
+              "size": 2187401
             },
             {
               "name": "vet",
@@ -56922,7 +56922,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16537419
+              "size": 16539047
             },
             {
               "name": "gofmt",
@@ -56946,13 +56946,13 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_ppc64/compile",
               "category": "tool",
-              "size": 27942784
+              "size": 27943118
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/openbsd_ppc64/cover",
               "category": "tool",
-              "size": 5476777
+              "size": 5478405
             },
             {
               "name": "fix",
@@ -56970,7 +56970,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/openbsd_ppc64/preprofile",
               "category": "tool",
-              "size": 2191512
+              "size": 2191846
             },
             {
               "name": "vet",
@@ -56988,7 +56988,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 14708078
+              "size": 14709755
             },
             {
               "name": "gofmt",
@@ -57012,13 +57012,13 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_riscv64/compile",
               "category": "tool",
-              "size": 24860628
+              "size": 24860610
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/openbsd_riscv64/cover",
               "category": "tool",
-              "size": 4826974
+              "size": 4828651
             },
             {
               "name": "fix",
@@ -57036,7 +57036,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/openbsd_riscv64/preprofile",
               "category": "tool",
-              "size": 1994068
+              "size": 1994126
             },
             {
               "name": "vet",
@@ -57054,61 +57054,61 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15582259
+              "size": 15592155
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 2586164
+              "size": 2586276
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/plan9_386/asm",
               "category": "tool",
-              "size": 4573062
+              "size": 4573498
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/plan9_386/cgo",
               "category": "tool",
-              "size": 3611381
+              "size": 3611801
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/plan9_386/compile",
               "category": "tool",
-              "size": 25784807
+              "size": 25783526
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/plan9_386/cover",
               "category": "tool",
-              "size": 4742145
+              "size": 4752109
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/plan9_386/fix",
               "category": "tool",
-              "size": 7525226
+              "size": 7525478
             },
             {
               "name": "link",
               "path": "go/pkg/tool/plan9_386/link",
               "category": "tool",
-              "size": 6774608
+              "size": 6775016
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/plan9_386/preprofile",
               "category": "tool",
-              "size": 1884535
+              "size": 1886830
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/plan9_386/vet",
               "category": "tool",
-              "size": 7237657
+              "size": 7237641
             }
           ]
         },
@@ -57120,61 +57120,61 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16274282
+              "size": 16284834
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 2797805
+              "size": 2797973
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/plan9_amd64/asm",
               "category": "tool",
-              "size": 4900969
+              "size": 4901217
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/plan9_amd64/cgo",
               "category": "tool",
-              "size": 3866578
+              "size": 3866682
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/plan9_amd64/compile",
               "category": "tool",
-              "size": 27349363
+              "size": 27347558
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/plan9_amd64/cover",
               "category": "tool",
-              "size": 5131760
+              "size": 5142216
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/plan9_amd64/fix",
               "category": "tool",
-              "size": 8439863
+              "size": 8439983
             },
             {
               "name": "link",
               "path": "go/pkg/tool/plan9_amd64/link",
               "category": "tool",
-              "size": 7031824
+              "size": 7032008
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/plan9_amd64/preprofile",
               "category": "tool",
-              "size": 2028158
+              "size": 2030209
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/plan9_amd64/vet",
               "category": "tool",
-              "size": 8134732
+              "size": 8134852
             }
           ]
         },
@@ -57186,61 +57186,61 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15708967
+              "size": 15719647
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 2657262
+              "size": 2657510
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/plan9_arm/asm",
               "category": "tool",
-              "size": 4819127
+              "size": 4819363
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/plan9_arm/cgo",
               "category": "tool",
-              "size": 3699798
+              "size": 3700250
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/plan9_arm/compile",
               "category": "tool",
-              "size": 26508057
+              "size": 26506800
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/plan9_arm/cover",
               "category": "tool",
-              "size": 4833000
+              "size": 4843460
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/plan9_arm/fix",
               "category": "tool",
-              "size": 7674214
+              "size": 7674674
             },
             {
               "name": "link",
               "path": "go/pkg/tool/plan9_arm/link",
               "category": "tool",
-              "size": 6902615
+              "size": 6902987
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/plan9_arm/preprofile",
               "category": "tool",
-              "size": 1938481
+              "size": 1940912
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/plan9_arm/vet",
               "category": "tool",
-              "size": 7392859
+              "size": 7393115
             }
           ]
         },
@@ -57252,7 +57252,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 16672624
+              "size": 16682444
             },
             {
               "name": "gofmt",
@@ -57276,13 +57276,13 @@
               "name": "compile",
               "path": "go/pkg/tool/solaris_amd64/compile",
               "category": "tool",
-              "size": 27645866
+              "size": 27641828
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/solaris_amd64/cover",
               "category": "tool",
-              "size": 5415152
+              "size": 5424972
             },
             {
               "name": "fix",
@@ -57300,7 +57300,7 @@
               "name": "preprofile",
               "path": "go/pkg/tool/solaris_amd64/preprofile",
               "category": "tool",
-              "size": 2207209
+              "size": 2207267
             },
             {
               "name": "vet",
@@ -57318,61 +57318,61 @@
               "name": "go",
               "path": "go/bin/go.exe",
               "category": "command",
-              "size": 17014272
+              "size": 17045504
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt.exe",
               "category": "command",
-              "size": 3164672
+              "size": 3188736
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/windows_386/asm.exe",
               "category": "tool",
-              "size": 5300736
+              "size": 5327360
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/windows_386/cgo.exe",
               "category": "tool",
-              "size": 4310016
+              "size": 4334080
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/windows_386/compile.exe",
               "category": "tool",
-              "size": 27518976
+              "size": 27537920
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/windows_386/cover.exe",
               "category": "tool",
-              "size": 5522944
+              "size": 5559808
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/windows_386/fix.exe",
               "category": "tool",
-              "size": 8302592
+              "size": 8321536
             },
             {
               "name": "link",
               "path": "go/pkg/tool/windows_386/link.exe",
               "category": "tool",
-              "size": 7599104
+              "size": 7617024
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/windows_386/preprofile.exe",
               "category": "tool",
-              "size": 2459648
+              "size": 2487808
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/windows_386/vet.exe",
               "category": "tool",
-              "size": 8009216
+              "size": 8028160
             }
           ]
         },
@@ -57384,61 +57384,61 @@
               "name": "go",
               "path": "go/bin/go.exe",
               "category": "command",
-              "size": 17178624
+              "size": 17209856
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt.exe",
               "category": "command",
-              "size": 3302400
+              "size": 3328000
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/windows_amd64/asm.exe",
               "category": "tool",
-              "size": 5465088
+              "size": 5492224
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/windows_amd64/cgo.exe",
               "category": "tool",
-              "size": 4453888
+              "size": 4478976
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/windows_amd64/compile.exe",
               "category": "tool",
-              "size": 28216832
+              "size": 28236800
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/windows_amd64/cover.exe",
               "category": "tool",
-              "size": 5764608
+              "size": 5803520
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/windows_amd64/fix.exe",
               "category": "tool",
-              "size": 9001472
+              "size": 9021952
             },
             {
               "name": "link",
               "path": "go/pkg/tool/windows_amd64/link.exe",
               "category": "tool",
-              "size": 7645696
+              "size": 7664640
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/windows_amd64/preprofile.exe",
               "category": "tool",
-              "size": 2557952
+              "size": 2586112
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/windows_amd64/vet.exe",
               "category": "tool",
-              "size": 8698880
+              "size": 8719360
             }
           ]
         },
@@ -57450,61 +57450,61 @@
               "name": "go",
               "path": "go/bin/go.exe",
               "category": "command",
-              "size": 15661056
+              "size": 15691776
             },
             {
               "name": "gofmt",
               "path": "go/bin/gofmt.exe",
               "category": "command",
-              "size": 3076096
+              "size": 3101184
             },
             {
               "name": "asm",
               "path": "go/pkg/tool/windows_arm64/asm.exe",
               "category": "tool",
-              "size": 5232640
+              "size": 5258240
             },
             {
               "name": "cgo",
               "path": "go/pkg/tool/windows_arm64/cgo.exe",
               "category": "tool",
-              "size": 4134912
+              "size": 4159488
             },
             {
               "name": "compile",
               "path": "go/pkg/tool/windows_arm64/compile.exe",
               "category": "tool",
-              "size": 26593280
+              "size": 26611712
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/windows_arm64/cover.exe",
               "category": "tool",
-              "size": 5374464
+              "size": 5411840
             },
             {
               "name": "fix",
               "path": "go/pkg/tool/windows_arm64/fix.exe",
               "category": "tool",
-              "size": 8334848
+              "size": 8353792
             },
             {
               "name": "link",
               "path": "go/pkg/tool/windows_arm64/link.exe",
               "category": "tool",
-              "size": 7099392
+              "size": 7117824
             },
             {
               "name": "preprofile",
               "path": "go/pkg/tool/windows_arm64/preprofile.exe",
               "category": "tool",
-              "size": 2408960
+              "size": 2437120
             },
             {
               "name": "vet",
               "path": "go/pkg/tool/windows_arm64/vet.exe",
               "category": "tool",
-              "size": 8075776
+              "size": 8095232
             }
           ]
         }
