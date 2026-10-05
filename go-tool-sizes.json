@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-03T05:05:45.851596865Z",
+  "generated_at": "2026-10-05T05:32:37.953236543Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "6f5c275ebdc454197fff5f1496521c8f81e20eef",
-      "commit_time": "2026-10-02T21:55:20Z",
+      "revision": "a90c4a7a586c70f0de61f5507d5c347702432e39",
+      "commit_time": "2026-10-05T03:38:49Z",
       "platforms": [
         {
           "os": "aix",
@@ -54966,7 +54966,7 @@
               "name": "compile",
               "path": "go/pkg/tool/aix_ppc64/compile",
               "category": "tool",
-              "size": 31269637
+              "size": 31334845
             },
             {
               "name": "cover",
@@ -55032,7 +55032,7 @@
               "name": "compile",
               "path": "go/pkg/tool/darwin_amd64/compile",
               "category": "tool",
-              "size": 28182528
+              "size": 28280368
             },
             {
               "name": "cover",
@@ -55098,7 +55098,7 @@
               "name": "compile",
               "path": "go/pkg/tool/darwin_arm64/compile",
               "category": "tool",
-              "size": 26998498
+              "size": 27109490
             },
             {
               "name": "cover",
@@ -55164,7 +55164,7 @@
               "name": "compile",
               "path": "go/pkg/tool/dragonfly_amd64/compile",
               "category": "tool",
-              "size": 27714813
+              "size": 27792281
             },
             {
               "name": "cover",
@@ -55230,7 +55230,7 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_386/compile",
               "category": "tool",
-              "size": 26258865
+              "size": 26315517
             },
             {
               "name": "cover",
@@ -55296,7 +55296,7 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_amd64/compile",
               "category": "tool",
-              "size": 27733777
+              "size": 27807149
             },
             {
               "name": "cover",
@@ -55362,7 +55362,7 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_arm/compile",
               "category": "tool",
-              "size": 27171124
+              "size": 27305600
             },
             {
               "name": "cover",
@@ -55428,7 +55428,7 @@
               "name": "compile",
               "path": "go/pkg/tool/freebsd_arm64/compile",
               "category": "tool",
-              "size": 26415283
+              "size": 26550095
             },
             {
               "name": "cover",
@@ -55494,7 +55494,7 @@
               "name": "compile",
               "path": "go/pkg/tool/illumos_amd64/compile",
               "category": "tool",
-              "size": 27731590
+              "size": 27809058
             },
             {
               "name": "cover",
@@ -55560,7 +55560,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_386/compile",
               "category": "tool",
-              "size": 26488035
+              "size": 26548783
             },
             {
               "name": "cover",
@@ -55626,7 +55626,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_amd64/compile",
               "category": "tool",
-              "size": 27824558
+              "size": 27902026
             },
             {
               "name": "cover",
@@ -55692,7 +55692,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_arm/compile",
               "category": "tool",
-              "size": 27573426
+              "size": 27642366
             },
             {
               "name": "cover",
@@ -55758,7 +55758,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_arm64/compile",
               "category": "tool",
-              "size": 26490451
+              "size": 26559727
             },
             {
               "name": "cover",
@@ -55824,7 +55824,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_loong64/compile",
               "category": "tool",
-              "size": 28126112
+              "size": 28260924
             },
             {
               "name": "cover",
@@ -55890,7 +55890,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mips/compile",
               "category": "tool",
-              "size": 30644169
+              "size": 30713109
             },
             {
               "name": "cover",
@@ -55956,7 +55956,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mips64/compile",
               "category": "tool",
-              "size": 32475012
+              "size": 32544288
             },
             {
               "name": "cover",
@@ -56022,7 +56022,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mips64le/compile",
               "category": "tool",
-              "size": 32476293
+              "size": 32545569
             },
             {
               "name": "cover",
@@ -56088,7 +56088,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_mipsle/compile",
               "category": "tool",
-              "size": 30644125
+              "size": 30713065
             },
             {
               "name": "cover",
@@ -56154,7 +56154,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_ppc64/compile",
               "category": "tool",
-              "size": 28145975
+              "size": 28280787
             },
             {
               "name": "cover",
@@ -56220,7 +56220,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_ppc64le/compile",
               "category": "tool",
-              "size": 28211051
+              "size": 28280327
             },
             {
               "name": "cover",
@@ -56286,7 +56286,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_riscv64/compile",
               "category": "tool",
-              "size": 25061987
+              "size": 25065987
             },
             {
               "name": "cover",
@@ -56352,7 +56352,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_s390x/compile",
               "category": "tool",
-              "size": 29722864
+              "size": 29792140
             },
             {
               "name": "cover",
@@ -56418,7 +56418,7 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_386/compile",
               "category": "tool",
-              "size": 26241044
+              "size": 26301792
             },
             {
               "name": "cover",
@@ -56484,7 +56484,7 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_amd64/compile",
               "category": "tool",
-              "size": 27715092
+              "size": 27792560
             },
             {
               "name": "cover",
@@ -56550,7 +56550,7 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_arm/compile",
               "category": "tool",
-              "size": 27169837
+              "size": 27304313
             },
             {
               "name": "cover",
@@ -56616,7 +56616,7 @@
               "name": "compile",
               "path": "go/pkg/tool/netbsd_arm64/compile",
               "category": "tool",
-              "size": 26413696
+              "size": 26482972
             },
             {
               "name": "cover",
@@ -56682,7 +56682,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_386/compile",
               "category": "tool",
-              "size": 26237165
+              "size": 26297913
             },
             {
               "name": "cover",
@@ -56748,7 +56748,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_amd64/compile",
               "category": "tool",
-              "size": 27708858
+              "size": 27786326
             },
             {
               "name": "cover",
@@ -56814,7 +56814,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_arm/compile",
               "category": "tool",
-              "size": 27174183
+              "size": 27308659
             },
             {
               "name": "cover",
@@ -56880,7 +56880,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_arm64/compile",
               "category": "tool",
-              "size": 26354510
+              "size": 26554858
             },
             {
               "name": "cover",
@@ -56946,7 +56946,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_ppc64/compile",
               "category": "tool",
-              "size": 28012196
+              "size": 28147008
             },
             {
               "name": "cover",
@@ -57012,7 +57012,7 @@
               "name": "compile",
               "path": "go/pkg/tool/openbsd_riscv64/compile",
               "category": "tool",
-              "size": 24929557
+              "size": 25064629
             },
             {
               "name": "cover",
@@ -57078,7 +57078,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_386/compile",
               "category": "tool",
-              "size": 25829202
+              "size": 25887416
             },
             {
               "name": "cover",
@@ -57144,7 +57144,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_amd64/compile",
               "category": "tool",
-              "size": 27430418
+              "size": 27506056
             },
             {
               "name": "cover",
@@ -57210,7 +57210,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_arm/compile",
               "category": "tool",
-              "size": 26594572
+              "size": 26654810
             },
             {
               "name": "cover",
@@ -57276,7 +57276,7 @@
               "name": "compile",
               "path": "go/pkg/tool/solaris_amd64/compile",
               "category": "tool",
-              "size": 27727244
+              "size": 27804712
             },
             {
               "name": "cover",
@@ -57342,7 +57342,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_386/compile.exe",
               "category": "tool",
-              "size": 27586048
+              "size": 27647488
             },
             {
               "name": "cover",
@@ -57408,7 +57408,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_amd64/compile.exe",
               "category": "tool",
-              "size": 28319744
+              "size": 28406272
             },
             {
               "name": "cover",
@@ -57474,7 +57474,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_arm64/compile.exe",
               "category": "tool",
-              "size": 26692096
+              "size": 26775552
             },
             {
               "name": "cover",
