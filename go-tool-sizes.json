@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-10T05:14:18.947190063Z",
+  "generated_at": "2026-10-11T05:15:47.628866698Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "966c78ed74f45dc3a3ffcb5c4a983de0271a17ce",
-      "commit_time": "2026-10-10T04:22:10Z",
+      "revision": "2c3c1caad2079458fa7248ea1814797fc2e94e8a",
+      "commit_time": "2026-10-10T23:21:58Z",
       "platforms": [
         {
           "os": "aix",
@@ -54966,7 +54966,7 @@
               "name": "compile",
               "path": "go/pkg/tool/aix_ppc64/compile",
               "category": "tool",
-              "size": 31392170
+              "size": 31392298
             },
             {
               "name": "cover",
@@ -57054,7 +57054,7 @@
               "name": "go",
               "path": "go/bin/go",
               "category": "command",
-              "size": 15631114
+              "size": 15631146
             },
             {
               "name": "gofmt",
@@ -57078,7 +57078,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_386/compile",
               "category": "tool",
-              "size": 25927928
+              "size": 25928048
             },
             {
               "name": "cover",
@@ -57096,7 +57096,7 @@
               "name": "link",
               "path": "go/pkg/tool/plan9_386/link",
               "category": "tool",
-              "size": 6569757
+              "size": 6569789
             },
             {
               "name": "preprofile",
@@ -57144,7 +57144,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_amd64/compile",
               "category": "tool",
-              "size": 27548802
+              "size": 27548914
             },
             {
               "name": "cover",
@@ -57162,7 +57162,7 @@
               "name": "link",
               "path": "go/pkg/tool/plan9_amd64/link",
               "category": "tool",
-              "size": 6820084
+              "size": 6820116
             },
             {
               "name": "preprofile",
@@ -57192,7 +57192,7 @@
               "name": "gofmt",
               "path": "go/bin/gofmt",
               "category": "command",
-              "size": 2656871
+              "size": 2656887
             },
             {
               "name": "asm",
@@ -57210,13 +57210,13 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_arm/compile",
               "category": "tool",
-              "size": 26695110
+              "size": 26695222
             },
             {
               "name": "cover",
               "path": "go/pkg/tool/plan9_arm/cover",
               "category": "tool",
-              "size": 4871318
+              "size": 4871334
             },
             {
               "name": "fix",
@@ -57228,7 +57228,7 @@
               "name": "link",
               "path": "go/pkg/tool/plan9_arm/link",
               "category": "tool",
-              "size": 6704432
+              "size": 6704472
             },
             {
               "name": "preprofile",
@@ -57342,7 +57342,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_386/compile.exe",
               "category": "tool",
-              "size": 27691008
+              "size": 27691520
             },
             {
               "name": "cover",
