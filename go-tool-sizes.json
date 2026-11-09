@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-08T04:57:22.309350571Z",
+  "generated_at": "2026-11-09T05:11:16.649953861Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "dcc06a82727b447270b1a58cc5f86b49736e317c",
-      "commit_time": "2026-11-07T15:27:37Z",
+      "revision": "be57ebb0f3c3ec056ccf39107a5d1380a51ff1c2",
+      "commit_time": "2026-11-08T14:56:11Z",
       "platforms": [
         {
           "os": "aix",
@@ -54966,7 +54966,7 @@
               "name": "compile",
               "path": "go/pkg/tool/aix_ppc64/compile",
               "category": "tool",
-              "size": 30880011
+              "size": 30880155
             },
             {
               "name": "cover",
@@ -56286,7 +56286,7 @@
               "name": "compile",
               "path": "go/pkg/tool/linux_riscv64/compile",
               "category": "tool",
-              "size": 24616642
+              "size": 24551026
             },
             {
               "name": "cover",
@@ -56298,7 +56298,7 @@
               "name": "fix",
               "path": "go/pkg/tool/linux_riscv64/fix",
               "category": "tool",
-              "size": 7710205
+              "size": 7644669
             },
             {
               "name": "link",
@@ -57078,7 +57078,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_386/compile",
               "category": "tool",
-              "size": 25651199
+              "size": 25651607
             },
             {
               "name": "cover",
@@ -57144,7 +57144,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_amd64/compile",
               "category": "tool",
-              "size": 27160614
+              "size": 27160854
             },
             {
               "name": "cover",
@@ -57210,7 +57210,7 @@
               "name": "compile",
               "path": "go/pkg/tool/plan9_arm/compile",
               "category": "tool",
-              "size": 26400912
+              "size": 26401304
             },
             {
               "name": "cover",
@@ -57342,7 +57342,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_386/compile.exe",
               "category": "tool",
-              "size": 27422720
+              "size": 27423232
             },
             {
               "name": "cover",
@@ -57408,7 +57408,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_amd64/compile.exe",
               "category": "tool",
-              "size": 28260352
+              "size": 28260864
             },
             {
               "name": "cover",
@@ -57474,7 +57474,7 @@
               "name": "compile",
               "path": "go/pkg/tool/windows_arm64/compile.exe",
               "category": "tool",
-              "size": 26461696
+              "size": 26462208
             },
             {
               "name": "cover",
