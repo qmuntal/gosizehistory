@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-14T04:52:43.088105477Z",
+  "generated_at": "2026-11-15T05:09:28.736850577Z",
   "source": "dl.json",
   "releases": [
     {
@@ -54931,8 +54931,8 @@
       "stable": false,
       "development": true,
       "source": "https://github.com/golang/go.git",
-      "revision": "46b62495e1bf4d56e0313320772ae588d9119aed",
-      "commit_time": "2026-11-14T03:04:20Z",
+      "revision": "840c8327132051c7ef099b069c5b0861638170b5",
+      "commit_time": "2026-11-14T21:34:07Z",
       "platforms": [
         {
           "os": "aix",
@@ -55572,7 +55572,7 @@
               "name": "fix",
               "path": "go/pkg/tool/linux_386/fix",
               "category": "tool",
-              "size": 7964962
+              "size": 7969058
             },
             {
               "name": "link",
@@ -55620,7 +55620,7 @@
               "name": "cgo",
               "path": "go/pkg/tool/linux_amd64/cgo",
               "category": "tool",
-              "size": 4200807
+              "size": 4204903
             },
             {
               "name": "compile",
